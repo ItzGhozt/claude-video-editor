@@ -327,9 +327,11 @@ struct StartGuideView: View {
                           text: "Type in the chat, or click a **quick action** (Highlight reel, Export 9:16, Subtitles…) to start from a ready-made request. Drag a clip from the right-hand list into the message box to refer to it by name.")
                 GuideStep(n: 3, title: "Or talk it through with the Prompt Creator",
                           text: "Click **Prompt Creator** (⇧⌘P), press the mic (⌘D) and describe the video out loud: what it's for, which clips, the vibe, music, length. Click **Create Prompt** and Claude turns your thoughts into a clear brief. Edit it, then **Send to Claude**.")
-                GuideStep(n: 4, title: "Check the plan, then render",
+                GuideStep(n: 4, title: "Save prompts, teach it your style",
+                          text: "Hover over a message you sent and click the **☆** to save it into a folder (the **Saved** menu and **Saved Prompts & Style** window bring it back). Tell Claude lasting preferences (\"I hate fast zooms\") or use **👍 / 👎** on its replies, and it remembers them for every future edit. Review or change them under **My Style**.")
+                GuideStep(n: 5, title: "Check the plan, then render",
                           text: "Claude usually shows you a cut list before rendering. Reply with changes (\"swap the 2nd and 3rd clips\", \"make it warmer\") until it's right.")
-                GuideStep(n: 5, title: "Watch the result",
+                GuideStep(n: 6, title: "Watch the result",
                           text: "New renders appear in the clip list with a **NEW** tag. Click one to play it, or right-click › Show in Finder.")
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Tips").font(.title3.bold())

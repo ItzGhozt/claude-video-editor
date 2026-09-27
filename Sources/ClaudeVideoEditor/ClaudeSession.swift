@@ -41,7 +41,25 @@ final class ClaudeSession: ObservableObject, Identifiable {
     For editing work use the video-use skill if it is available. \(py)\
     You can only work inside this folder; if something outside it is needed, ask the user to \
     copy it in.
+
+    \(Self.stylePrompt)
     """
+    }
+
+    /// The user's likes/dislikes, and how to keep them up to date.
+    static var stylePrompt: String {
+        StyleMemory.shared.reload()
+        let current = StyleMemory.shared.summary.map { "The user's saved style preferences (apply them unless they say otherwise):\n\($0)" }
+            ?? "The user hasn't saved any style preferences yet."
+        return """
+        \(current)
+        Their preferences file is \(StyleMemory.file). When the user states a lasting preference \
+        about how they like their videos (for example "I hate fast zooms", "always use warm grades", \
+        "keep reels under 30 seconds"), update that file with the Edit tool: add one short bullet \
+        under "## Likes" or "## Dislikes", don't duplicate, and remove any entry it contradicts. \
+        Then tell them in a few words that you saved it. Don't record one-off instructions for a \
+        single edit, and never write anything else in that folder.
+        """
     }
 
     init(project: Project) {
@@ -173,6 +191,9 @@ final class ClaudeSession: ObservableObject, Identifiable {
 
     // MARK: - Parsing stream-json
 
+    /// Test hook: feed one stream-json line as if Claude had printed it.
+    func handleLineForTesting(_ line: String) { consume(Data((line + "\n").utf8)) }
+
     private func consume(_ data: Data) {
         buffer.append(data)
         while let nl = buffer.firstIndex(of: 0x0A) {
@@ -234,6 +255,7 @@ final class ClaudeSession: ObservableObject, Identifiable {
             }
             isBusy = false
             turnsFinished += 1
+            StyleMemory.shared.reload()   // Claude may have added a preference
             save()
         default: break
         }

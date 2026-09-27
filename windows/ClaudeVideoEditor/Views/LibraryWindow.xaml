@@ -1,0 +1,97 @@
+<Window x:Class="ClaudeVideoEditor.Views.LibraryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Saved Prompts &amp; My Style" Width="940" Height="640" MinWidth="720" MinHeight="480"
+        WindowStartupLocation="CenterOwner">
+    <TabControl x:Name="Tabs" Margin="8">
+        <!-- Saved prompts -->
+        <TabItem Header="☆  Saved Prompts">
+            <Grid Margin="4,8,4,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200" />
+                    <ColumnDefinition Width="280" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <DockPanel Grid.Column="0" Margin="0,0,8,0">
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                        <DockPanel>
+                            <Button Content="Add" DockPanel.Dock="Right" Margin="6,0,0,0" Click="AddFolder_Click" />
+                            <TextBox x:Name="NewFolderBox" ToolTip="New folder name" />
+                        </DockPanel>
+                        <Button x:Name="DeleteFolderButton" Content="Delete Folder" Margin="0,6,0,0" Click="DeleteFolder_Click"
+                                ToolTip="Its prompts move to Favorites" />
+                    </StackPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Folders" Style="{StaticResource Secondary}" FontWeight="SemiBold" Margin="2,0,0,6" />
+                    <ListBox x:Name="FolderList" SelectionChanged="FolderList_SelectionChanged" />
+                </DockPanel>
+
+                <DockPanel Grid.Column="1" Margin="0,0,8,0">
+                    <TextBox x:Name="SearchBox" DockPanel.Dock="Top" Margin="0,0,0,6" TextChanged="Search_TextChanged" ToolTip="Search all saved prompts" />
+                    <Grid>
+                        <ListBox x:Name="PromptList" SelectionChanged="PromptList_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="2,4">
+                                        <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Preview}" Style="{StaticResource Secondary}" FontSize="11" MaxHeight="32" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock x:Name="EmptyPrompts" Style="{StaticResource Secondary}" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   IsHitTestVisible="False" Text="No saved prompts here yet.&#10;Click ☆ on any message you've sent to save it." />
+                    </Grid>
+                </DockPanel>
+
+                <DockPanel Grid.Column="2" x:Name="DetailPanel">
+                    <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                        <Button Content="Delete" DockPanel.Dock="Left" Click="DeletePrompt_Click" />
+                        <Button Content="Copy" DockPanel.Dock="Left" Margin="6,0,0,0" Click="Copy_Click" />
+                        <Button Content="Use in Chat" Style="{StaticResource Primary}" HorizontalAlignment="Right" Click="Use_Click" />
+                    </DockPanel>
+                    <TextBox x:Name="TitleBox" DockPanel.Dock="Top" FontWeight="SemiBold" Margin="0,0,0,6" LostFocus="Detail_LostFocus" ToolTip="Name" />
+                    <ComboBox x:Name="FolderPicker" DockPanel.Dock="Top" Margin="0,0,0,6" SelectionChanged="FolderPicker_SelectionChanged" />
+                    <TextBox x:Name="TextBox_" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" LostFocus="Detail_LostFocus" />
+                </DockPanel>
+                <TextBlock x:Name="NoSelection" Grid.Column="2" Text="Select a prompt" Style="{StaticResource Secondary}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+        </TabItem>
+
+        <!-- Style memory -->
+        <TabItem Header="♡  My Style">
+            <DockPanel Margin="8">
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                    <TextBlock Text="My Style" Style="{StaticResource PageTitle}" />
+                    <TextBlock Style="{StaticResource Secondary}"
+                               Text="Claude reads this before every edit and every Prompt Creator prompt. It adds to it when you tell it something lasting (&quot;I hate fast zooms&quot;), and when you use 👍 / 👎 on its replies. Edit or remove anything here." />
+                </StackPanel>
+                <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+                    <Button Content="Open File" DockPanel.Dock="Left" Click="OpenStyleFile_Click" />
+                    <Button Content="Clear All…" HorizontalAlignment="Right" Click="ClearStyle_Click" />
+                </DockPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition /><ColumnDefinition Width="16" /><ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <DockPanel Grid.Column="0">
+                        <TextBlock DockPanel.Dock="Top" Text="👍  Likes" Style="{StaticResource SectionTitle}" Foreground="{StaticResource Good}" Margin="0,0,0,6" />
+                        <DockPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
+                            <Button Content="Add" DockPanel.Dock="Right" Margin="6,0,0,0" Tag="like" Click="AddStyle_Click" />
+                            <TextBox x:Name="NewLike" ToolTip="Add something you like" />
+                        </DockPanel>
+                        <ListBox x:Name="LikesList" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    </DockPanel>
+                    <DockPanel Grid.Column="2">
+                        <TextBlock DockPanel.Dock="Top" Text="👎  Dislikes" Style="{StaticResource SectionTitle}" Foreground="{StaticResource Bad}" Margin="0,0,0,6" />
+                        <DockPanel DockPanel.Dock="Bottom" Margin="0,6,0,0">
+                            <Button Content="Add" DockPanel.Dock="Right" Margin="6,0,0,0" Tag="dislike" Click="AddStyle_Click" />
+                            <TextBox x:Name="NewDislike" ToolTip="Add something you don't like" />
+                        </DockPanel>
+                        <ListBox x:Name="DislikesList" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    </DockPanel>
+                </Grid>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
+</Window>

@@ -70,6 +70,7 @@ struct ChatView: View {
                         .controlSize(.small)
                         .help(a.prompt)
                     }
+                    SavedPromptsMenu(session: session, focus: { composerFocused = true })
             }
             .padding(.horizontal, 12).padding(.top, 8)
 
@@ -124,8 +125,8 @@ private struct ItemView: View {
 
     var body: some View {
         switch item.kind {
-        case .user: Bubble(text: item.text, isUser: true)
-        case .assistant: Bubble(text: item.text, isUser: false)
+        case .user: UserMessage(text: item.text)
+        case .assistant: AssistantMessage(text: item.text)
         case .tool, .toolResult:
             VStack(alignment: .leading, spacing: 4) {
                 Button { expanded.toggle() } label: {
@@ -154,6 +155,107 @@ private struct ItemView: View {
             Label(item.text, systemImage: "exclamationmark.triangle")
                 .font(.callout).foregroundStyle(.red).textSelection(.enabled)
         }
+    }
+}
+
+/// A message the user sent, with a star to save it to Saved Prompts.
+private struct UserMessage: View {
+    let text: String
+    @ObservedObject private var library = PromptLibrary.shared
+    @State private var saving = false
+    @State private var hovering = false
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 6) {
+            Spacer(minLength: 40)
+            let saved = library.contains(text: text)
+            Button { saving = true } label: {
+                Image(systemName: saved ? "star.fill" : "star")
+                    .foregroundStyle(saved ? Color.yellow : Color.secondary)
+            }
+            .buttonStyle(.borderless)
+            .help(saved ? "Saved. Click to save another copy" : "Save to Saved Prompts")
+            .opacity(saved || hovering ? 1 : 0)
+            Bubble(text: text, isUser: true).fixedSize(horizontal: false, vertical: true)
+        }
+        .onHover { hovering = $0 }
+        .contextMenu { Button("Save to Saved Prompts…") { saving = true } }
+        .sheet(isPresented: $saving) { SavePromptSheet(text: text) }
+    }
+}
+
+/// A reply from Claude, with 👍 / 👎 to teach it the user's style.
+private struct AssistantMessage: View {
+    let text: String
+    @State private var hovering = false
+    @State private var feedback: Bool?   // true = like, false = dislike
+    @State private var showLike = false
+    @State private var showDislike = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Bubble(text: text, isUser: false)
+            HStack(spacing: 10) {
+                Button { showLike = true } label: {
+                    Image(systemName: feedback == true ? "hand.thumbsup.fill" : "hand.thumbsup")
+                }
+                .help("I like this: tell Claude what to keep doing")
+                .popover(isPresented: $showLike) { FeedbackPopover(like: true, isPresented: $showLike) { feedback = true } }
+                Button { showDislike = true } label: {
+                    Image(systemName: feedback == false ? "hand.thumbsdown.fill" : "hand.thumbsdown")
+                }
+                .help("I don't like this: tell Claude what to avoid")
+                .popover(isPresented: $showDislike) { FeedbackPopover(like: false, isPresented: $showDislike) { feedback = false } }
+            }
+            .buttonStyle(.borderless)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding(.leading, 8)
+            .opacity(hovering || feedback != nil || showLike || showDislike ? 1 : 0)
+        }
+        .onHover { hovering = $0 }
+    }
+}
+
+/// "Saved" menu next to the quick actions: insert a saved prompt, or save the
+/// current message.
+private struct SavedPromptsMenu: View {
+    @ObservedObject var session: ClaudeSession
+    let focus: () -> Void
+    @ObservedObject private var library = PromptLibrary.shared
+    @Environment(\.openWindow) private var openWindow
+    @State private var saving = false
+
+    var body: some View {
+        Menu {
+            ForEach(library.folders, id: \.self) { folder in
+                let items = library.prompts(in: folder)
+                if !items.isEmpty {
+                    Section(folder) {
+                        ForEach(items) { p in
+                            Button(p.title) {
+                                session.draft = session.draft.isEmpty ? p.text : session.draft + "\n\n" + p.text
+                                focus()
+                            }
+                        }
+                    }
+                }
+            }
+            if library.prompts.isEmpty {
+                Text("No saved prompts yet")
+            }
+            Divider()
+            Button("Save Current Message…") { saving = true }
+                .disabled(session.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            Button("Open Library…") { openWindow(id: "library") }
+        } label: {
+            Label("Saved", systemImage: "star")
+        }
+        .menuStyle(.button)
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+        .fixedSize()
+        .sheet(isPresented: $saving) { SavePromptSheet(text: session.draft) }
     }
 }
 

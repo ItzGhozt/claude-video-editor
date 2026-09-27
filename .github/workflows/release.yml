@@ -1,0 +1,37 @@
+name: Release
+
+# Push a tag like v1.2.0 to build, test and publish both apps:
+#   git tag v1.2.0 && git push origin v1.2.0
+# Release notes come from scripts/release-notes.md.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    with:
+      version: ${{ github.ref_name }}
+
+  publish:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: app-*
+          merge-multiple: true
+          path: release
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la release
+          gh release create "${{ github.ref_name }}" release/*.zip \
+            --title "Claude Video Editor ${{ github.ref_name }}" \
+            --notes-file scripts/release-notes.md

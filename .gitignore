@@ -3,3 +3,5 @@
 dist/
 .DS_Store
 .swiftpm/
+windows/**/bin/
+windows/**/obj/

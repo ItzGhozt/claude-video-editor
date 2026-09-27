@@ -1,0 +1,77 @@
+<UserControl x:Class="ClaudeVideoEditor.Views.GuidePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="Num" TargetType="Border">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Background" Value="{StaticResource Accent}" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Margin" Value="0,0,14,0" />
+        </Style>
+        <Style x:Key="NumText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="DockPanel">
+            <Setter Property="Margin" Value="0,0,0,18" />
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="680" Margin="30">
+            <TextBlock Text="Start guide" Style="{StaticResource PageTitle}" Margin="0,0,0,18" />
+
+            <DockPanel>
+                <Border Style="{StaticResource Num}"><TextBlock Text="1" Style="{StaticResource NumText}" /></Border>
+                <StackPanel>
+                    <TextBlock Text="Add a project folder" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Secondary}">Click <Bold>Add Folder…</Bold> in the sidebar (or drag a folder onto it) and pick a folder of footage. Claude works inside that folder, so put everything the edit needs in it.</TextBlock>
+                </StackPanel>
+            </DockPanel>
+            <DockPanel>
+                <Border Style="{StaticResource Num}"><TextBlock Text="2" Style="{StaticResource NumText}" /></Border>
+                <StackPanel>
+                    <TextBlock Text="Say what you want" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Secondary}">Type in the chat, or click a <Bold>quick action</Bold> (Highlight reel, Export 9:16, Subtitles…) to start from a ready-made request. Drag a clip from the right-hand list into the message box to refer to it by name.</TextBlock>
+                </StackPanel>
+            </DockPanel>
+            <DockPanel>
+                <Border Style="{StaticResource Num}"><TextBlock Text="3" Style="{StaticResource NumText}" /></Border>
+                <StackPanel>
+                    <TextBlock Text="Or talk it through with the Prompt Creator" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Secondary}">Click <Bold>Prompt Creator</Bold> (Ctrl+Shift+P), press the mic and describe the video out loud: what it's for, which clips, the vibe, music, length. Click <Bold>Create Prompt</Bold> and Claude turns your thoughts into a clear brief. Edit it, then <Bold>Send to Claude</Bold>.</TextBlock>
+                </StackPanel>
+            </DockPanel>
+            <DockPanel>
+                <Border Style="{StaticResource Num}"><TextBlock Text="4" Style="{StaticResource NumText}" /></Border>
+                <StackPanel>
+                    <TextBlock Text="Approve what Claude runs" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Secondary}">Simple file changes inside the project happen automatically. Before Claude runs anything else, like ffmpeg or Python, a card appears in the chat: <Bold>Allow</Bold>, <Bold>Always allow</Bold> (for that program, in this project) or <Bold>Deny</Bold>.</TextBlock>
+                </StackPanel>
+            </DockPanel>
+            <DockPanel>
+                <Border Style="{StaticResource Num}"><TextBlock Text="5" Style="{StaticResource NumText}" /></Border>
+                <StackPanel>
+                    <TextBlock Text="Save prompts, teach it your style" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Secondary}">Click <Bold>☆ Save prompt</Bold> under a message you sent to file it into a folder; the <Bold>☆ Saved</Bold> button brings it back. Tell Claude lasting preferences ("I hate fast zooms") or use <Bold>👍 / 👎</Bold> on its replies, and it remembers them for every future edit. Review them under <Bold>My Style</Bold>.</TextBlock>
+                </StackPanel>
+            </DockPanel>
+            <DockPanel>
+                <Border Style="{StaticResource Num}"><TextBlock Text="6" Style="{StaticResource NumText}" /></Border>
+                <StackPanel>
+                    <TextBlock Text="Check the plan, then watch the result" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Secondary}">Claude usually shows a cut list before rendering; reply with changes until it's right. New renders appear in the clip list marked <Bold>NEW</Bold>. Click one to play it.</TextBlock>
+                </StackPanel>
+            </DockPanel>
+
+            <TextBlock Text="Tips" Style="{StaticResource SectionTitle}" Margin="0,4,0,6" />
+            <TextBlock Style="{StaticResource Secondary}" Margin="0,0,0,4">• Each project keeps its own conversation, even after you quit. Use <Bold>New Chat</Bold> to start fresh.</TextBlock>
+            <TextBlock Style="{StaticResource Secondary}" Margin="0,0,0,4">• <Bold>Stop</Bold> interrupts a long job; the next message carries on from there.</TextBlock>
+            <TextBlock Style="{StaticResource Secondary}" Margin="0,0,0,4">• The first transcription of a long clip can take a few minutes.</TextBlock>
+            <TextBlock Style="{StaticResource Secondary}">• Open this guide any time from <Bold>Help › Start Guide</Bold>.</TextBlock>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

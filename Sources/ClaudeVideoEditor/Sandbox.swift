@@ -52,7 +52,12 @@ enum Sandbox {
         }
         readOnly = prune(Array(Set(readOnly)))
 
-        let allowed = media + scratch + readOnly
+        // The style-memory folder, so Claude can record likes/dislikes the user
+        // states. It sits inside ~/Library (denied below); the sandbox lets the
+        // narrower allow win, and the tool rules deny everything around it.
+        let memory = [URL(fileURLWithPath: StyleMemory.directory).resolvingSymlinksInPath().path]
+
+        let allowed = media + scratch + memory + readOnly
         let privatePaths = privateDirs.map { home + "/" + $0 }
 
         func rule(_ tool: String, _ path: String) -> String {
@@ -71,6 +76,18 @@ enum Sandbox {
         toolDeny += readOnly.map { rule("Edit", $0) }
         toolDeny += ["Edit(//etc/**)", "Edit(//usr/**)", "Edit(//opt/**)", "Edit(//System/**)"]
 
+        // Skill: load video-use. Agent: video-use renders animations in parallel
+        // sub-agents, which inherit these same rules.
+        // ffmpeg/ffprobe: sandboxed Bash is normally auto-approved, but a generated
+        // input like `-f lavfi -i color=c=black:s=1080x1920` reads to the path
+        // checker as an unknown file and asks for approval, which -p mode turns
+        // into a refusal. The kernel sandbox still confines what these commands
+        // can read and write.
+        var toolAllow: [String] = (media + scratch + memory).flatMap { [rule("Read", $0), rule("Edit", $0)] }
+        toolAllow += readOnly.map { rule("Read", $0) }
+        toolAllow += ["Skill", "Agent", "Glob", "Grep", "TodoWrite", "Bash(ffmpeg:*)", "Bash(ffprobe:*)"]
+        let writable: [String] = media + scratch + memory
+
         let settings: [String: Any] = [
             "permissions": [
                 // Off on purpose: it makes Claude Code guess which paths a Bash command
@@ -78,18 +95,8 @@ enum Sandbox {
                 // prompts even with permissions skipped. The kernel sandbox below
                 // enforces reads on the real syscalls instead.
                 "blockReadsOutsideWorkingDirectories": false,
-                "additionalDirectories": scratch + readOnly,
-                // Skill: load video-use. Agent: video-use renders animations in
-                // parallel sub-agents, which inherit these same rules.
-                // ffmpeg/ffprobe: sandboxed Bash is normally auto-approved, but a
-                // generated input like `-f lavfi -i color=c=black:s=1080x1920` reads
-                // to the path checker as an unknown file and asks for approval,
-                // which -p mode turns into a refusal. The kernel sandbox still
-                // confines what these commands can read and write.
-                "allow": (media + scratch).flatMap { [rule("Read", $0), rule("Edit", $0)] }
-                    + readOnly.map { rule("Read", $0) }
-                    + ["Skill", "Agent", "Glob", "Grep", "TodoWrite",
-                       "Bash(ffmpeg:*)", "Bash(ffprobe:*)"],
+                "additionalDirectories": Array(scratch + memory + readOnly),
+                "allow": toolAllow,
                 "deny": toolDeny,
             ],
             "sandbox": [
@@ -99,7 +106,7 @@ enum Sandbox {
                 "allowUnsandboxedCommands": false,
                 "filesystem": [
                     // External volumes need allowRead as well as allowWrite.
-                    "allowWrite": media + scratch,
+                    "allowWrite": writable,
                     "allowRead": allowed,
                     "denyRead": privatePaths + ["/Volumes/Macintosh HD/Users"],
                 ],

@@ -9,6 +9,7 @@ struct PromptCreatorView: View {
     @State private var prompt = ""
     @State private var building = false
     @State private var error: String?
+    @State private var saving = false
 
     private var project: Project? { store.projects.first { $0.path == projectPath } }
 
@@ -99,6 +100,9 @@ struct PromptCreatorView: View {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(prompt, forType: .string)
                 } label: { Label("Copy", systemImage: "doc.on.doc") }
+                Button { saving = true } label: { Label("Save", systemImage: "star") }
+                    .help("Save to Saved Prompts")
+                    .sheet(isPresented: $saving) { SavePromptSheet(text: prompt) }
                 Spacer()
                 Button { deliver(sendNow: false) } label: { Label("Put in Chat", systemImage: "text.bubble") }
                     .help("Put the prompt in the chat box so you can tweak it before sending")

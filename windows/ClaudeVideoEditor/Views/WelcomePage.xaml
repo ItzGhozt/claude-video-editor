@@ -1,0 +1,56 @@
+<UserControl x:Class="ClaudeVideoEditor.Views.WelcomePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="600" Margin="30" HorizontalAlignment="Center">
+            <Image Source="/Assets/AppIcon.png" Width="104" Height="104" Margin="0,10,0,16" />
+            <TextBlock Text="Welcome to Claude Video Editor" FontSize="30" FontWeight="SemiBold" HorizontalAlignment="Center" />
+            <TextBlock Style="{StaticResource Secondary}" FontSize="16" TextAlignment="Center" Margin="0,10,0,24"
+                       Text="Edit your footage by chatting with Claude. Pick a folder of clips, say what you want, and Claude cuts, grades, subtitles and renders it for you." />
+
+            <ItemsControl>
+                <ItemsControl.Resources>
+                    <Style TargetType="Grid">
+                        <Setter Property="Margin" Value="0,0,0,14" />
+                    </Style>
+                </ItemsControl.Resources>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition /></Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE8BD;" FontFamily="{StaticResource Icons}" FontSize="22" Foreground="{StaticResource Accent}" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Chat to edit" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Style="{StaticResource Secondary}" Text="Describe the video you want in plain words. Claude shows you its plan before rendering." />
+                    </StackPanel>
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition /></Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE720;" FontFamily="{StaticResource Icons}" FontSize="22" Foreground="{StaticResource Accent}" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Prompt Creator" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Style="{StaticResource Secondary}" Text="Just talk. Your thoughts become a clear, detailed editing brief." />
+                    </StackPanel>
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition /></Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE714;" FontFamily="{StaticResource Icons}" FontSize="22" Foreground="{StaticResource Accent}" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Preview as you go" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Style="{StaticResource Secondary}" Text="Every clip and render in your folder, playable right in the app." />
+                    </StackPanel>
+                </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition /></Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE72E;" FontFamily="{StaticResource Icons}" FontSize="22" Foreground="{StaticResource Accent}" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="You stay in control" Style="{StaticResource SectionTitle}" />
+                        <TextBlock Style="{StaticResource Secondary}" Text="Claude works inside the folder you choose, and asks you before running anything else." />
+                    </StackPanel>
+                </Grid>
+            </ItemsControl>
+
+            <TextBlock Style="{StaticResource Secondary}" TextAlignment="Center" Margin="0,14,0,0">
+                Built on <Bold>video-use</Bold> by Browser Use, an open-source editing skill for Claude Code.
+            </TextBlock>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

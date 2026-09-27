@@ -1,0 +1,24 @@
+<UserControl x:Class="ClaudeVideoEditor.Views.OnboardingView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:ClaudeVideoEditor.Views">
+    <DockPanel>
+        <!-- Step indicator -->
+        <StackPanel x:Name="Steps" DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16" />
+        <Separator DockPanel.Dock="Top" Margin="0" />
+
+        <!-- Footer -->
+        <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="{StaticResource SubtleBorder}" Padding="16,12">
+            <DockPanel>
+                <Button x:Name="BackButton" Content="Back" Click="Back_Click" DockPanel.Dock="Left" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock x:Name="Hint" Style="{StaticResource Secondary}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <Button x:Name="SkipButton" Content="Skip for now" Click="Skip_Click" Margin="0,0,8,0" />
+                    <Button x:Name="NextButton" Content="Continue" Style="{StaticResource Primary}" Click="Next_Click" IsDefault="True" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <ContentControl x:Name="Page" />
+    </DockPanel>
+</UserControl>

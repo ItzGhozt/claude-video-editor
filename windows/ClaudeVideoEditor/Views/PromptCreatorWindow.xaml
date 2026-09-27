@@ -1,0 +1,69 @@
+<Window x:Class="ClaudeVideoEditor.Views.PromptCreatorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Prompt Creator" Width="700" Height="760" MinWidth="560" MinHeight="600"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel Margin="20">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,14">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                <TextBlock Text="Project" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <ComboBox x:Name="ProjectPicker" Width="240" DisplayMemberPath="Name" SelectionChanged="ProjectPicker_SelectionChanged" />
+            </StackPanel>
+            <TextBlock Text="Prompt Creator" Style="{StaticResource PageTitle}" Margin="0" />
+        </DockPanel>
+
+        <!-- Footer -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <Button x:Name="CopyButton" Content="Copy" DockPanel.Dock="Left" Click="Copy_Click" />
+            <Button x:Name="SaveButton" Content="☆ Save" DockPanel.Dock="Left" Margin="8,0,0,0" Click="Save_Click" ToolTip="Save to Saved Prompts" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="PutButton" Content="Put in Chat" Margin="0,0,8,0" Click="Put_Click" ToolTip="Put the prompt in the chat box so you can tweak it before sending" />
+                <Button x:Name="SendButton" Content="Send to Claude" Style="{StaticResource Primary}" Click="Send_Click" />
+            </StackPanel>
+        </DockPanel>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="1.3*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="1. Say what you want" Style="{StaticResource SectionTitle}" Margin="0,0,0,8" />
+            <DockPanel Grid.Row="1">
+                <Button x:Name="MicButton" DockPanel.Dock="Left" Width="64" Height="64" Margin="0,0,14,0" VerticalAlignment="Top"
+                        Click="Mic_Click" ToolTip="Start talking (Ctrl+D)" Style="{StaticResource Primary}">
+                    <TextBlock x:Name="MicGlyph" Text="&#xE720;" FontFamily="{StaticResource Icons}" FontSize="26" />
+                </Button>
+                <StackPanel DockPanel.Dock="Bottom">
+                    <TextBlock x:Name="PartialText" FontStyle="Italic" Style="{StaticResource Secondary}" Margin="0,6,0,0" />
+                    <TextBlock x:Name="ProblemText" Foreground="{StaticResource Bad}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                    <TextBlock x:Name="SpeechSettingsLink" Margin="0,4,0,0" Visibility="Collapsed">
+                        <Hyperlink Click="SpeechSettings_Click">Open speech settings</Hyperlink>
+                    </TextBlock>
+                </StackPanel>
+                <Grid>
+                    <TextBox x:Name="Notes" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" MinHeight="120" TextChanged="Notes_TextChanged" />
+                    <TextBlock x:Name="NotesPlaceholder" Style="{StaticResource Secondary}" Margin="12,8" IsHitTestVisible="False"
+                               Text="Click the mic (Ctrl+D) and just talk: what the video is for, which clips, the vibe, music, length… Or type here." />
+                </Grid>
+            </DockPanel>
+
+            <DockPanel Grid.Row="2" Margin="0,12,0,0">
+                <Button Content="Clear" DockPanel.Dock="Right" Click="Clear_Click" />
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="CreateButton" Content="Create Prompt" Style="{StaticResource Primary}" Padding="16,7" Click="Create_Click" ToolTip="Ctrl+Enter" />
+                    <ProgressBar x:Name="BuildingBar" IsIndeterminate="True" Width="80" Height="4" Margin="12,0,6,0" Visibility="Collapsed" />
+                    <TextBlock x:Name="BuildingText" Text="Writing your prompt…" Style="{StaticResource Secondary}" VerticalAlignment="Center" Visibility="Collapsed" />
+                </StackPanel>
+            </DockPanel>
+            <TextBlock x:Name="ErrorText" Grid.Row="3" Foreground="{StaticResource Bad}" TextWrapping="Wrap" Margin="0,6,0,0" />
+
+            <TextBlock Grid.Row="4" Text="2. Check the prompt (you can edit it)" Style="{StaticResource SectionTitle}" Margin="0,14,0,8" />
+            <TextBox x:Name="PromptBox" Grid.Row="5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextChanged="PromptBox_TextChanged" />
+        </Grid>
+    </DockPanel>
+</Window>
