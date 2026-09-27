@@ -225,6 +225,8 @@ struct MainView: View {
             if env["CE_OPEN_PROMPT"] != nil { openWindow(id: "prompt-creator") }
             // Dev aid: `CE_TEST_SEND="..."` sends one message to the selected project on launch.
             if let msg = env["CE_TEST_SEND"], let p = store.selected { store.session(for: p).send(msg) }
+            // Dev aid: `CE_TEST_DRAFT="..."` fills the message box (for checking long prompts).
+            if let d = env["CE_TEST_DRAFT"], let p = store.selected { store.session(for: p).draft = d }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             DispatchQueue.main.async { store.reloadProjects() }
