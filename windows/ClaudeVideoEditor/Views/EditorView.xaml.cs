@@ -75,6 +75,9 @@ public partial class EditorView : UserControl
             };
             QuickActions.Children.Add(b);
         }
+        var saved = new Button { Content = "☆ Saved ▾", Style = (Style)FindResource("Chip"), ToolTip = "Insert a saved prompt, or save this message" };
+        saved.Click += (_, _) => ShowSavedMenu(saved);
+        QuickActions.Children.Add(saved);
         _playerTimer.Tick += (_, _) => UpdatePlayerTime();
         SetupManager.Shared.Changed += UpdateSetupButton;
         Loaded += async (_, _) =>
@@ -86,6 +89,7 @@ public partial class EditorView : UserControl
         };
         Unloaded += (_, _) => SetupManager.Shared.Changed -= UpdateSetupButton;
         InputBindings.Add(new KeyBinding(new RelayCommand(() => PromptCreatorWindow.Open()), Key.P, ModifierKeys.Control | ModifierKeys.Shift));
+        InputBindings.Add(new KeyBinding(new RelayCommand(() => LibraryWindow.Open()), Key.L, ModifierKeys.Control | ModifierKeys.Shift));
     }
 
     static async Task CheckSignInAsync()
@@ -259,6 +263,66 @@ public partial class EditorView : UserControl
         }
     }
 
+    // MARK: Saved prompts and style feedback
+
+    /// Puts text in the message box of the open project. False if there is none.
+    public bool InsertIntoComposer(string text)
+    {
+        if (_session == null) return false;
+        Composer.Text = Composer.Text.Length == 0 ? text : Composer.Text + "\n\n" + text;
+        Composer.Focus();
+        Composer.CaretIndex = Composer.Text.Length;
+        return true;
+    }
+
+    void ShowSavedMenu(Button anchor)
+    {
+        var menu = new ContextMenu { PlacementTarget = anchor };
+        var lib = PromptLibrary.Shared;
+        foreach (var folder in lib.Folders)
+        {
+            var items = lib.In(folder);
+            if (items.Count == 0) continue;
+            var sub = new MenuItem { Header = folder };
+            foreach (var p in items)
+            {
+                var mi = new MenuItem { Header = p.Title, ToolTip = p.Preview };
+                mi.Click += (_, _) => InsertIntoComposer(p.Text);
+                sub.Items.Add(mi);
+            }
+            menu.Items.Add(sub);
+        }
+        if (lib.Prompts.Count == 0) menu.Items.Add(new MenuItem { Header = "No saved prompts yet", IsEnabled = false });
+        menu.Items.Add(new Separator());
+        var save = new MenuItem { Header = "Save Current Message…", IsEnabled = Composer.Text.Trim().Length > 0 };
+        save.Click += (_, _) => LibraryDialogs.SavePrompt(Window.GetWindow(this), Composer.Text);
+        menu.Items.Add(save);
+        var open = new MenuItem { Header = "Open Library…" };
+        open.Click += (_, _) => LibraryWindow.Open();
+        menu.Items.Add(open);
+        menu.IsOpen = true;
+    }
+
+    void SavePrompt_Click(object sender, RoutedEventArgs e)
+    {
+        if (ItemOf(sender) is not ChatItem i) return;
+        LibraryDialogs.SavePrompt(Window.GetWindow(this), i.Text);
+        SaveButton_Loaded(sender, e);
+    }
+
+    void SaveButton_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button b && ItemOf(sender) is ChatItem i)
+            b.Content = PromptLibrary.Shared.Contains(i.Text) ? "★ Saved" : "☆ Save prompt";
+    }
+
+    void Like_Click(object sender, RoutedEventArgs e) => Feedback(sender, true);
+    void Dislike_Click(object sender, RoutedEventArgs e) => Feedback(sender, false);
+    void Feedback(object sender, bool like)
+    {
+        if (LibraryDialogs.Feedback(Window.GetWindow(this), like) && sender is Button b) { b.Opacity = 1; b.FontWeight = FontWeights.Bold; }
+    }
+
     // MARK: Approvals
 
     ChatItem? ItemOf(object sender) => (sender as FrameworkElement)?.DataContext as ChatItem;
@@ -388,6 +452,7 @@ public partial class EditorView : UserControl
     // MARK: Menus
 
     void PromptCreator_Click(object sender, RoutedEventArgs e) => PromptCreatorWindow.Open();
+    void Library_Click(object sender, RoutedEventArgs e) => LibraryWindow.Open();
     void Settings_Click(object sender, RoutedEventArgs e) => SimpleWindows.Settings();
     void Guide_Click(object sender, RoutedEventArgs e) => SimpleWindows.Guide();
     void Credits_Click(object sender, RoutedEventArgs e) => SimpleWindows.Credits();

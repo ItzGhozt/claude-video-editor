@@ -81,7 +81,21 @@ public class ClaudeSession : INotifyPropertyChanged
                "plain-spoken; the user is an editor, not a programmer. For editing work use the video-use skill if it is " +
                "available. " + py + "You can only work inside this folder; if something outside it is needed, ask the " +
                "user to copy it in. Commands other than simple file operations need the user's approval, which they give " +
-               "in the app; prefer a few well-chosen commands over many small ones.";
+               "in the app; prefer a few well-chosen commands over many small ones.\n\n" + StylePrompt();
+    }
+
+    /// The user's likes/dislikes, and how to keep them up to date.
+    internal static string StylePrompt()
+    {
+        StyleMemory.Shared.Reload();
+        var current = StyleMemory.Shared.Summary is string s
+            ? "The user's saved style preferences (apply them unless they say otherwise):\n" + s
+            : "The user hasn't saved any style preferences yet.";
+        return current + "\nTheir preferences file is " + StyleMemory.FilePath + ". When the user states a lasting preference " +
+               "about how they like their videos (for example \"I hate fast zooms\", \"always use warm grades\", \"keep reels " +
+               "under 30 seconds\"), update that file with the Edit tool: add one short bullet under \"## Likes\" or " +
+               "\"## Dislikes\", don't duplicate, and remove any entry it contradicts. Then tell them in a few words that you " +
+               "saved it. Don't record one-off instructions for a single edit, and never write anything else in that folder.";
     }
 
     // MARK: Sending
@@ -335,6 +349,7 @@ public class ClaudeSession : INotifyPropertyChanged
                     Items.Add(new ChatItem { Kind = ChatKind.Error, Text = err });
                 }
                 IsBusy = false;
+                StyleMemory.Shared.Reload();   // Claude may have added a preference
                 TurnsFinished++;
                 Save();
                 break;

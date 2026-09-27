@@ -15,6 +15,7 @@
         <!-- Footer -->
         <DockPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
             <Button x:Name="CopyButton" Content="Copy" DockPanel.Dock="Left" Click="Copy_Click" />
+            <Button x:Name="SaveButton" Content="☆ Save" DockPanel.Dock="Left" Margin="8,0,0,0" Click="Save_Click" ToolTip="Save to Saved Prompts" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="PutButton" Content="Put in Chat" Margin="0,0,8,0" Click="Put_Click" ToolTip="Put the prompt in the chat box so you can tweak it before sending" />
                 <Button x:Name="SendButton" Content="Send to Claude" Style="{StaticResource Primary}" Click="Send_Click" />

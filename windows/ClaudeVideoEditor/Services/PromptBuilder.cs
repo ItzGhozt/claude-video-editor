@@ -27,7 +27,7 @@ Write the prompt in the editor's own voice (""I want…""), organised under shor
 - Output: a filename and save location inside the project folder
 - Check-ins: ask to see the cut list before rendering anything
 
-Keep every specific detail they mention. Don't invent preferences they didn't express. If something important is missing, add a final ""Questions for me"" section with at most 3 short questions. Output ONLY the prompt text: no preamble, no code fences.
+{(StyleMemory.Shared.Summary is string style ? "Their saved style preferences (work in the relevant ones unless their thoughts say otherwise):\n" + style + "\n" : "")}Keep every specific detail they mention. Don't invent preferences they didn't express. If something important is missing, add a final ""Questions for me"" section with at most 3 short questions. Output ONLY the prompt text: no preamble, no code fences.
 
 Their thoughts:
 """"""

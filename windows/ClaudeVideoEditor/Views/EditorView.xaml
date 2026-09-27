@@ -4,15 +4,31 @@
              xmlns:v="clr-namespace:ClaudeVideoEditor.Views">
     <UserControl.Resources>
         <!-- Chat item templates, picked by ChatTemplateSelector -->
+        <Style x:Key="Tiny" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Padding" Value="6,1" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Margin" Value="0,0,6,0" />
+            <Setter Property="Opacity" Value="0.75" />
+        </Style>
         <DataTemplate x:Key="UserTemplate">
-            <Border Background="{StaticResource Accent}" CornerRadius="14" Padding="12,8" Margin="80,0,0,10" HorizontalAlignment="Right">
-                <TextBox Text="{Binding Text, Mode=OneWay}" Style="{StaticResource SelectableText}" Foreground="White" />
-            </Border>
+            <StackPanel HorizontalAlignment="Right" Margin="80,0,0,10">
+                <Border Background="{StaticResource Accent}" CornerRadius="14" Padding="12,8">
+                    <TextBox Text="{Binding Text, Mode=OneWay}" Style="{StaticResource SelectableText}" Foreground="White" />
+                </Border>
+                <Button Content="☆ Save prompt" Style="{StaticResource Tiny}" HorizontalAlignment="Right" Margin="0,3,0,0"
+                        Click="SavePrompt_Click" Loaded="SaveButton_Loaded" ToolTip="Save to Saved Prompts" />
+            </StackPanel>
         </DataTemplate>
         <DataTemplate x:Key="AssistantTemplate">
-            <Border Background="{StaticResource Subtle}" CornerRadius="14" Padding="12,8" Margin="0,0,80,10" HorizontalAlignment="Left">
-                <TextBox Text="{Binding Text, Mode=OneWay}" Style="{StaticResource SelectableText}" />
-            </Border>
+            <StackPanel HorizontalAlignment="Left" Margin="0,0,80,10">
+                <Border Background="{StaticResource Subtle}" CornerRadius="14" Padding="12,8">
+                    <TextBox Text="{Binding Text, Mode=OneWay}" Style="{StaticResource SelectableText}" />
+                </Border>
+                <StackPanel Orientation="Horizontal" Margin="6,3,0,0">
+                    <Button Content="👍" Style="{StaticResource Tiny}" Click="Like_Click" ToolTip="I like this: tell Claude what to keep doing" />
+                    <Button Content="👎" Style="{StaticResource Tiny}" Click="Dislike_Click" ToolTip="I don't like this: tell Claude what to avoid" />
+                </StackPanel>
+            </StackPanel>
         </DataTemplate>
         <DataTemplate x:Key="ToolTemplate">
             <Expander Margin="2,0,0,8" Opacity="0.75">
@@ -67,6 +83,7 @@
             <MenuItem Header="_File">
                 <MenuItem Header="_Add Folder…" Click="AddFolder_Click" />
                 <MenuItem Header="_Prompt Creator" InputGestureText="Ctrl+Shift+P" Click="PromptCreator_Click" />
+                <MenuItem Header="Saved Prompts &amp; _My Style" InputGestureText="Ctrl+Shift+L" Click="Library_Click" />
                 <Separator />
                 <MenuItem Header="_Settings" Click="Settings_Click" />
                 <Separator />
@@ -95,6 +112,7 @@
                 <StackPanel DockPanel.Dock="Bottom">
                     <Button x:Name="FinishSetupButton" Content="⚠  Finish Setup" HorizontalAlignment="Stretch" Margin="0,0,0,8" Click="Settings_Click" />
                     <Button Content="🎙  Prompt Creator" Style="{StaticResource Primary}" HorizontalAlignment="Stretch" Padding="10,8" Margin="0,0,0,8" Click="PromptCreator_Click" />
+                    <Button Content="☆  Saved Prompts &amp; Style" HorizontalAlignment="Stretch" Margin="0,0,0,8" Click="Library_Click" />
                     <Button Content="Add Folder…" HorizontalAlignment="Stretch" Click="AddFolder_Click" />
                 </StackPanel>
                 <TextBlock DockPanel.Dock="Top" Text="Projects" Style="{StaticResource Secondary}" FontWeight="SemiBold" Margin="4,0,0,6" />

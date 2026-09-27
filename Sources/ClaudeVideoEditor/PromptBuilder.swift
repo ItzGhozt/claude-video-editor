@@ -29,6 +29,7 @@ enum PromptBuilder {
         - Output: a filename and save location inside the project folder
         - Check-ins: ask to see the cut list before rendering anything
 
+        \(StyleMemory.shared.summary.map { "Their saved style preferences (work in the relevant ones unless their thoughts say otherwise):\n\($0)\n" } ?? "")\
         Keep every specific detail they mention. Don't invent preferences they didn't express. \
         If something important is missing, add a final "Questions for me" section with at most \
         3 short questions. Output ONLY the prompt text: no preamble, no code fences.

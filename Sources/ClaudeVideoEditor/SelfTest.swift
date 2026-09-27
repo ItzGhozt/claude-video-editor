@@ -60,6 +60,59 @@ enum SelfTest {
             check("settings file", false, error.localizedDescription)
         }
 
+        // 1b. Style memory is editable, the rest of the app's data isn't.
+        do {
+            let file = try Sandbox.settingsFile(for: project)
+            let obj = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: file))) as? [String: Any] ?? [:]
+            let perms = obj["permissions"] as? [String: Any] ?? [:]
+            let allow = perms["allow"] as? [String] ?? []
+            let deny = perms["deny"] as? [String] ?? []
+            let writable = ((obj["sandbox"] as? [String: Any])?["filesystem"] as? [String: Any])?["allowWrite"] as? [String] ?? []
+            let mem = URL(fileURLWithPath: StyleMemory.directory).resolvingSymlinksInPath().path
+            let appData = (mem as NSString).deletingLastPathComponent
+            let rule = { (tool: String, path: String) in "\(tool)(//\(path.drop(while: { $0 == "/" }))/**)" }
+            check("style memory editable by Claude", allow.contains(rule("Edit", mem)) && writable.contains(mem))
+            check("style memory not denied", !deny.contains { $0.contains(mem) })
+            check("chat history next to it stays denied", deny.contains(rule("Read", appData + "/chats")) || !FileManager.default.fileExists(atPath: appData + "/chats"))
+            check("Library still denied around it", deny.contains(rule("Read", Toolchain.home + "/Library/Preferences")))
+        } catch {
+            check("memory settings", false, error.localizedDescription)
+        }
+
+        // 1c. Style memory and prompt library round-trips (the user's real files are
+        // backed up and restored).
+        let memBackup = try? String(contentsOfFile: StyleMemory.file, encoding: .utf8)
+        let mem = StyleMemory.shared
+        mem.clear()
+        mem.add("warm, slightly desaturated grades", like: true)
+        mem.add("fast zoom transitions", like: false)
+        mem.add("fast zoom transitions", like: false)
+        let fileText = (try? String(contentsOfFile: StyleMemory.file, encoding: .utf8)) ?? ""
+        check("likes/dislikes written as Markdown", fileText.contains("## Likes\n- warm, slightly desaturated grades") && fileText.contains("## Dislikes\n- fast zoom transitions"))
+        check("no duplicate entries", mem.dislikes == ["fast zoom transitions"])
+        // Simulate Claude editing the file directly.
+        try? fileText.replacingOccurrences(of: "## Dislikes\n", with: "## Dislikes\n- captions that cover faces\n")
+            .write(toFile: StyleMemory.file, atomically: true, encoding: .utf8)
+        mem.reload()
+        check("edits Claude makes to the file are picked up", mem.dislikes.contains("captions that cover faces"))
+        mem.add("fast zoom transitions", like: true)
+        check("switching like/dislike moves the entry", mem.likes.contains("fast zoom transitions") && !mem.dislikes.contains("fast zoom transitions"))
+        check("preferences go into the session prompt", ClaudeSession.stylePrompt.contains("captions that cover faces") && ClaudeSession.stylePrompt.contains(StyleMemory.file))
+        if let b = memBackup { try? b.write(toFile: StyleMemory.file, atomically: true, encoding: .utf8) } else { mem.clear() }
+        mem.reload()
+
+        let lib = PromptLibrary.shared
+        let before = lib.prompts.count
+        lib.addFolder("CI Test Folder")
+        lib.add(title: "", text: "Make a 30 second upbeat 9:16 reel from the best moments please", folder: "CI Test Folder")
+        let saved = lib.prompts(in: "CI Test Folder").first
+        check("prompt saved into its folder", saved != nil && lib.contains(text: saved?.text ?? "-"))
+        check("title made from first words", saved?.title == "Make a 30 second upbeat 9:16 reel…", saved?.title ?? "nil")
+        lib.deleteFolder("CI Test Folder")
+        check("deleting a folder keeps its prompts (moved to Favorites)", saved.map { s in lib.prompts.first { $0.id == s.id }?.folder == PromptLibrary.defaultFolder } ?? false)
+        if let s = saved { lib.delete(s) }
+        check("library back to how it was", lib.prompts.count == before)
+
         // 2. Stream parsing.
         let s = ClaudeSession(project: Project(name: "parse", path: project))
         s.newChat()

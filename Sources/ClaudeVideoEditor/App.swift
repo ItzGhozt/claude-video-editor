@@ -22,7 +22,10 @@ struct ClaudeVideoEditorApp: App {
         }
         .defaultSize(width: 1320, height: 820)
         .commands {
-            CommandGroup(after: .newItem) { MenuButtons(kind: .promptCreator) }
+            CommandGroup(after: .newItem) {
+                MenuButtons(kind: .promptCreator)
+                MenuButtons(kind: .library)
+            }
             CommandGroup(replacing: .help) {
                 MenuButtons(kind: .guide)
                 MenuButtons(kind: .credits)
@@ -37,6 +40,11 @@ struct ClaudeVideoEditorApp: App {
         }
         .defaultSize(width: 680, height: 720)
 
+        Window("Library", id: "library") {
+            LibraryView().environmentObject(store)
+        }
+        .defaultSize(width: 900, height: 620)
+
         Window("Start Guide", id: "guide") { StartGuideView().frame(minWidth: 560, minHeight: 600) }
             .defaultSize(width: 720, height: 760)
 
@@ -50,7 +58,7 @@ struct ClaudeVideoEditorApp: App {
 }
 
 private struct MenuButtons: View {
-    enum Kind { case promptCreator, guide, credits }
+    enum Kind { case promptCreator, library, guide, credits }
     let kind: Kind
     @Environment(\.openWindow) private var openWindow
     var body: some View {
@@ -58,6 +66,9 @@ private struct MenuButtons: View {
         case .promptCreator:
             Button("Prompt Creator") { openWindow(id: "prompt-creator") }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
+        case .library:
+            Button("Saved Prompts & My Style") { openWindow(id: "library") }
+                .keyboardShortcut("l", modifiers: [.command, .shift])
         case .guide:
             Button("Start Guide") { openWindow(id: "guide") }
         case .credits:
@@ -158,6 +169,9 @@ struct MainView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
+                    Button { openWindow(id: "library") } label: {
+                        Label("Saved Prompts & Style", systemImage: "star").frame(maxWidth: .infinity)
+                    }
                     Button { store.addFolder() } label: {
                         Label("Add Folder…", systemImage: "folder.badge.plus").frame(maxWidth: .infinity)
                     }
@@ -223,6 +237,7 @@ struct MainView: View {
         .onAppear {
             let env = ProcessInfo.processInfo.environment
             if env["CE_OPEN_PROMPT"] != nil { openWindow(id: "prompt-creator") }
+            if env["CE_OPEN_LIBRARY"] != nil { openWindow(id: "library") }
             // Dev aid: `CE_TEST_SEND="..."` sends one message to the selected project on launch.
             if let msg = env["CE_TEST_SEND"], let p = store.selected { store.session(for: p).send(msg) }
             // Dev aid: `CE_TEST_DRAFT="..."` fills the message box (for checking long prompts).

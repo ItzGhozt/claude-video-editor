@@ -25,6 +25,11 @@ grades, subtitles and renders it. You can watch every clip and render right in t
 - **Prompt Creator**: press the mic, talk through what you want, and Claude turns your
   thoughts into a clear, detailed editing brief using your real clip names. Speech-to-text
   uses the system's built-in speech recognition.
+- **Saved Prompts**: star any message you've sent to file it into a folder ("Reels",
+  "Color"…), then reuse it from the **Saved** menu or the Library window.
+- **Learns your style**: tell Claude a lasting preference ("I hate fast zooms") or use 👍 / 👎
+  on its replies, and it's added to a Likes / Dislikes list that every edit and every Prompt
+  Creator prompt follows. You can review and edit the list under **My Style**.
 - **Clip browser and preview**: every video in the project, newest first, with renders
   tagged NEW. Drag a clip into the chat to refer to it.
 - **Contained projects**: each project's Claude session works inside that folder only.
@@ -40,16 +45,16 @@ Claude subscription or Anthropic API key.
 An [ElevenLabs](https://elevenlabs.io) key (free tier available) is recommended: video-use
 uses it to transcribe speech so it can cut on words.
 
-### macOS (Apple Silicon)
+### macOS
 
-1. Download `Claude-Video-Editor-x.y.z.zip` from [Releases](../../releases) and unzip it.
+1. Download `Claude-Video-Editor-macOS-x.y.z.zip` from [Releases](../../releases) and unzip it.
 2. Drag **Claude Video Editor** into your Applications folder.
 3. The app isn't notarized by Apple, so the first time, **right-click it › Open › Open**.
    (Or run `xattr -dr com.apple.quarantine "/Applications/Claude Video Editor.app"`.)
 
 ### Windows
 
-1. Download `Claude-Video-Editor-Windows-win-x64.zip` from [Releases](../../releases)
+1. Download `Claude-Video-Editor-Windows-win-x64-x.y.z.zip` from [Releases](../../releases)
    (`win-arm64` for ARM PCs such as Snapdragon laptops) and unzip it anywhere.
 2. Run **Claude Video Editor.exe**. It's a single file, and no installer or admin rights
    are needed.
@@ -116,6 +121,9 @@ generated settings file ([`Sandbox.swift`](Sources/ClaudeVideoEditor/Sandbox.swi
 - **Network allowlist.** Sandboxed commands can only reach ElevenLabs (transcription),
   PyPI, GitHub and npm (for helpers video-use installs on demand).
 - Skills (video-use) are read-only to the session.
+- The only place outside the project Claude may write is the style-preferences folder, so it
+  can record likes and dislikes you tell it. The rest of the app's data, such as chat
+  history, stays off-limits.
 
 ### Windows
 
@@ -140,6 +148,8 @@ permission checks, with you making the calls
 | What | Where |
 | --- | --- |
 | Chats | `~/Library/Application Support/Claude Video Editor/chats/` |
+| Saved prompts | `~/Library/Application Support/Claude Video Editor/saved-prompts.json` |
+| Style preferences (Likes / Dislikes) | `~/Library/Application Support/Claude Video Editor/memory/preferences.md` (the one app folder Claude may edit) |
 | Per-project sandbox settings | `~/Library/Application Support/Claude Video Editor/sandbox/` |
 | Anthropic API key (if used) | macOS keychain, service "Claude Video Editor" |
 | video-use | `~/Developer/video-use`, linked at `~/.claude/skills/video-use` |
@@ -154,8 +164,8 @@ key is in Credential Manager ("Claude Video Editor/anthropic-api-key"), and vide
 
 **macOS:** SwiftUI plus Swift Package Manager; no Xcode project is needed.
 
-- `swift build` compiles; `./build.sh` makes the `.app`; `VERSION=1.0.0 scripts/release.sh`
-  zips it for a release (`--publish` uploads it with `gh`).
+- `swift build` compiles; `./build.sh` makes the `.app` (universal when full Xcode is
+  installed, otherwise for this Mac only).
 - Dev switches (environment variables): `CE_SNAPSHOT=out.png` saves images of the app's
   windows after `CE_SNAPSHOT_DELAY` seconds, `CE_ONBOARD_STEP=n` opens onboarding at step
   *n*, `CE_OPEN_PROMPT=1` opens the Prompt Creator, and `CE_TEST_SEND="…"` sends one message
@@ -164,7 +174,18 @@ key is in Credential Manager ("Claude Video Editor/anthropic-api-key"), and vide
 **Windows:** WPF on .NET 10 in [`windows/`](windows/). It also builds (compile only) on
 macOS or Linux. `ClaudeVideoEditor.exe --self-test report.txt` checks the permission rules,
 the stream parser and a live Claude Code session, and `--snapshot <dir>` saves a PNG of every
-screen. The [Windows build workflow](.github/workflows/windows.yml) runs both on every change.
+screen.
+
+### CI and releases
+
+[CI](.github/workflows/ci.yml) runs on every push and pull request. On macOS it does a
+universal build, runs the self-test (`CE_SELF_TEST=report.txt`), including a live sandboxed
+Claude Code session, and takes screenshots. On Windows it builds x64 and arm64, then runs
+`--self-test` and `--snapshot`. Reports and screenshots are attached to each run as artifacts.
+
+To publish a release, update `scripts/release-notes.md`, then push a tag:
+`git tag v1.2.0 && git push origin v1.2.0`. The [release workflow](.github/workflows/release.yml)
+reruns CI and, only if it passes, creates the GitHub release with the macOS and Windows zips.
 
 ## Credits
 

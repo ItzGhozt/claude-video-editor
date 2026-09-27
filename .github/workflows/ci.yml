@@ -55,6 +55,8 @@ jobs:
           defaults write io.github.itzghozt.claude-video-editor onboardingDone -bool true
           CE_OPEN_PROMPT=1 CE_SNAPSHOT="$PWD/screenshots-macos/editor.png" CE_SNAPSHOT_DELAY=6 "$APP" &
           sleep 10; kill $! 2>/dev/null || true
+          CE_OPEN_LIBRARY=1 CE_LIBRARY_TAB=style CE_SNAPSHOT="$PWD/screenshots-macos/library.png" CE_SNAPSHOT_DELAY=6 "$APP" &
+          sleep 10; kill $! 2>/dev/null || true
           ls screenshots-macos
 
       - name: Zip

@@ -101,13 +101,18 @@ public static class SessionSettings
         // frames go there. Sessions get their own temp folder (TEMP/TMP point at
         // it) that is a read/write scratch area, like on macOS.
         var scratch = ScratchDir;
-        var allowed = new List<string> { projectDir, scratch };
+        // The style-memory folder, so Claude can record likes/dislikes the user
+        // states. It's inside AppData (denied below), so the deny rules cover
+        // everything around it instead.
+        var memory = Norm(StyleMemory.MemoryDir);
+        var allowed = new List<string> { projectDir, scratch, memory };
         allowed.AddRange(readOnly);
 
         var allow = new JsonArray
         {
             Rule("Read", projectDir), Rule("Edit", projectDir),
             Rule("Read", scratch), Rule("Edit", scratch),
+            Rule("Read", memory), Rule("Edit", memory),
             "Skill", "Agent", "Glob", "Grep", "TodoWrite",
         };
         foreach (var r in readOnly) allow.Add(Rule("Read", r));
@@ -129,7 +134,7 @@ public static class SessionSettings
             ["permissions"] = new JsonObject
             {
                 ["blockReadsOutsideWorkingDirectories"] = true,
-                ["additionalDirectories"] = new JsonArray(readOnly.Prepend(scratch).Select(r => (JsonNode)r).ToArray()),
+                ["additionalDirectories"] = new JsonArray(readOnly.Prepend(memory).Prepend(scratch).Select(r => (JsonNode)r).ToArray()),
                 ["allow"] = allow,
                 ["deny"] = deny,
             },

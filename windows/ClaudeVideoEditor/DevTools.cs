@@ -52,6 +52,46 @@ public static class DevTools
             Check("Documents denied", deny.Contains($"Read(/{SessionSettings.Posix(docs)}/**)"));
             Check("reads outside working dirs blocked", settings["permissions"]!["blockReadsOutsideWorkingDirectories"]!.GetValue<bool>());
 
+            var memDir = StyleMemory.MemoryDir;
+            Check("style memory editable by Claude", allow.Contains($"Edit(/{SessionSettings.Posix(memDir)}/**)"));
+            Check("style memory not denied", !deny.Any(d => d.Contains(SessionSettings.Posix(memDir))));
+            var chats = Path.Combine(Toolchain.AppDataDir, "chats");
+            Directory.CreateDirectory(chats);
+            var settings2 = JsonNode.Parse(File.ReadAllText(SessionSettings.WriteFor(info)))!;
+            var deny2 = settings2["permissions"]!["deny"]!.AsArray().Select(n => n!.GetValue<string>()).ToList();
+            Check("chat history next to it stays denied", deny2.Contains($"Read(/{SessionSettings.Posix(chats)}/**)"));
+
+            // 1b. Style memory and saved prompts round-trips.
+            var mem = StyleMemory.Shared;
+            var memBackup = File.Exists(StyleMemory.FilePath) ? File.ReadAllText(StyleMemory.FilePath) : null;
+            mem.Clear();
+            mem.Add("warm, slightly desaturated grades", true);
+            mem.Add("fast zoom transitions", false);
+            mem.Add("fast zoom transitions", false);
+            var md = File.ReadAllText(StyleMemory.FilePath);
+            Check("likes/dislikes written as Markdown", md.Contains("## Likes\n- warm, slightly desaturated grades") && md.Contains("## Dislikes\n- fast zoom transitions"));
+            Check("no duplicate entries", mem.Dislikes.Count == 1);
+            File.WriteAllText(StyleMemory.FilePath, md.Replace("## Dislikes\n", "## Dislikes\n- captions that cover faces\n"));
+            mem.Reload();
+            Check("edits Claude makes to the file are picked up", mem.Dislikes.Contains("captions that cover faces"));
+            mem.Add("fast zoom transitions", true);
+            Check("switching like/dislike moves the entry", mem.Likes.Contains("fast zoom transitions") && !mem.Dislikes.Contains("fast zoom transitions"));
+            var sp = ClaudeSession.StylePrompt();
+            Check("preferences go into the session prompt", sp.Contains("captions that cover faces") && sp.Contains(StyleMemory.FilePath));
+            if (memBackup != null) File.WriteAllText(StyleMemory.FilePath, memBackup); else mem.Clear();
+            mem.Reload();
+
+            var lib = PromptLibrary.Shared;
+            var before = lib.Prompts.Count;
+            lib.AddFolder("CI Test Folder");
+            var sv = lib.Add("", "Make a 30 second upbeat 9:16 reel from the best moments please", "CI Test Folder");
+            Check("prompt saved into its folder", lib.In("CI Test Folder").Contains(sv) && lib.Contains(sv.Text));
+            Check("title made from first words", sv.Title == "Make a 30 second upbeat 9:16 reel…", sv.Title);
+            lib.DeleteFolder("CI Test Folder");
+            Check("deleting a folder keeps its prompts (moved to Favorites)", sv.Folder == PromptLibrary.DefaultFolder && lib.Prompts.Contains(sv));
+            lib.Delete(sv);
+            Check("library back to how it was", lib.Prompts.Count == before);
+
             // 2. "Always allow" suggestions.
             AllowRule? S(string cmd) => ClaudeSession.SuggestRule("Bash", new JsonObject { ["command"] = cmd });
             Check("suggest ffmpeg", S("ffmpeg -y -i a.mp4 b.mp4")?.RuleContent == "ffmpeg:*");
@@ -174,6 +214,21 @@ public static class DevTools
         });
         mw.ShowEditor();
         await Shot(mw, "editor");
+
+        // Library, with sample prompts and preferences.
+        PromptLibrary.Shared.AddFolder("Reels");
+        PromptLibrary.Shared.Add("Upbeat 30s reel", "Make a 30-second 9:16 reel from the best moments, upbeat, cut on the beat, end on the widest shot.", "Reels");
+        PromptLibrary.Shared.Add("", "Trim the dead air and keep everything in order. Show me the cut list before rendering.", "Reels");
+        StyleMemory.Shared.Add("Warm, cozy color grades", true);
+        StyleMemory.Shared.Add("Cutting on the beat", true);
+        StyleMemory.Shared.Add("Fast zoom transitions", false);
+        var lw = LibraryWindow.Open();
+        lw.FolderList.SelectedItem = "Reels";
+        lw.PromptList.SelectedIndex = 0;
+        await Shot(lw, "library-prompts");
+        lw.Tabs.SelectedIndex = 1;
+        await Shot(lw, "library-style");
+        lw.Close();
 
         var pc = PromptCreatorWindow.Open();
         await Shot(pc, "prompt-creator");

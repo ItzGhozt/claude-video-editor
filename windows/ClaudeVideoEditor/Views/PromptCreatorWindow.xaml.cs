@@ -60,7 +60,7 @@ public partial class PromptCreatorWindow : Window
         CreateButton.IsEnabled = Notes.Text.Trim().Length > 0 && Project != null && BuildingBar.Visibility != Visibility.Visible;
         CreateButton.Content = PromptBox.Text.Length == 0 ? "Create Prompt" : "Recreate Prompt";
         var hasPrompt = PromptBox.Text.Trim().Length > 0 && Project != null;
-        CopyButton.IsEnabled = PutButton.IsEnabled = SendButton.IsEnabled = hasPrompt;
+        CopyButton.IsEnabled = PutButton.IsEnabled = SendButton.IsEnabled = SaveButton.IsEnabled = hasPrompt;
     }
 
     async void Mic_Click(object sender, RoutedEventArgs e) => await _dictation.ToggleAsync();
@@ -92,6 +92,7 @@ public partial class PromptCreatorWindow : Window
     }
 
     void Copy_Click(object sender, RoutedEventArgs e) => Clipboard.SetText(PromptBox.Text);
+    void Save_Click(object sender, RoutedEventArgs e) => LibraryDialogs.SavePrompt(this, PromptBox.Text);
     void Put_Click(object sender, RoutedEventArgs e) => Deliver(false);
     void Send_Click(object sender, RoutedEventArgs e) => Deliver(true);
 

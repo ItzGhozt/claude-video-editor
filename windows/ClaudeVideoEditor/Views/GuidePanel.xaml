@@ -55,6 +55,13 @@
             <DockPanel>
                 <Border Style="{StaticResource Num}"><TextBlock Text="5" Style="{StaticResource NumText}" /></Border>
                 <StackPanel>
+                    <TextBlock Text="Save prompts, teach it your style" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Secondary}">Click <Bold>☆ Save prompt</Bold> under a message you sent to file it into a folder; the <Bold>☆ Saved</Bold> button brings it back. Tell Claude lasting preferences ("I hate fast zooms") or use <Bold>👍 / 👎</Bold> on its replies, and it remembers them for every future edit. Review them under <Bold>My Style</Bold>.</TextBlock>
+                </StackPanel>
+            </DockPanel>
+            <DockPanel>
+                <Border Style="{StaticResource Num}"><TextBlock Text="6" Style="{StaticResource NumText}" /></Border>
+                <StackPanel>
                     <TextBlock Text="Check the plan, then watch the result" Style="{StaticResource SectionTitle}" />
                     <TextBlock Style="{StaticResource Secondary}">Claude usually shows a cut list before rendering; reply with changes until it's right. New renders appear in the clip list marked <Bold>NEW</Bold>. Click one to play it.</TextBlock>
                 </StackPanel>
