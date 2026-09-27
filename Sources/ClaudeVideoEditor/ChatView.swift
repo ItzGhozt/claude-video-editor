@@ -74,15 +74,15 @@ struct ChatView: View {
             .padding(.horizontal, 12).padding(.top, 8)
 
             HStack(alignment: .bottom, spacing: 8) {
-                TextField("Tell Claude what to edit…  (Return sends, ⌥Return for a new line)",
-                          text: $session.draft, axis: .vertical)
-                    .textFieldStyle(.plain)
-                    .lineLimit(1...10)
-                    .focused($composerFocused)
-                    .onSubmit { session.send(session.draft) }
-                    .padding(10)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .textBackgroundColor)))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.secondary.opacity(0.3)))
+                ComposerEditor(text: $session.draft,
+                               placeholder: "Tell Claude what to edit…  (Return sends, ⇧Return for a new line)") {
+                    session.send(session.draft)
+                }
+                .focused($composerFocused)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .textBackgroundColor)))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.secondary.opacity(0.3)))
                 if session.isBusy {
                     Button(role: .destructive) { session.stop() } label: {
                         Image(systemName: "stop.circle.fill").font(.title)
@@ -154,6 +154,46 @@ private struct ItemView: View {
             Label(item.text, systemImage: "exclamationmark.triangle")
                 .font(.callout).foregroundStyle(.red).textSelection(.enabled)
         }
+    }
+}
+
+/// The message box: grows with its text up to about 10 lines, then scrolls.
+/// Return sends; Shift- or Option-Return inserts a new line.
+struct ComposerEditor: View {
+    @Binding var text: String
+    let placeholder: String
+    let onSend: () -> Void
+
+    var body: some View {
+        // An invisible copy of the text decides the height (capped), and the
+        // real editor fills that space and scrolls when the text is longer.
+        Text(text.isEmpty ? " " : text + " ")
+            .font(.body)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 6)
+            .opacity(0)
+            .frame(maxWidth: .infinity, minHeight: 32, maxHeight: 220, alignment: .topLeading)
+            .fixedSize(horizontal: false, vertical: true)
+            .overlay {
+                TextEditor(text: $text)
+                    .font(.body)
+                    .scrollContentBackground(.hidden)
+                    .padding(.vertical, 6)
+                    .onKeyPress(.return, phases: .down) { press in
+                        if press.modifiers.contains(.shift) || press.modifiers.contains(.option) { return .ignored }
+                        onSend()
+                        return .handled
+                    }
+            }
+            .overlay(alignment: .topLeading) {
+                if text.isEmpty {
+                    Text(placeholder)
+                        .foregroundStyle(.tertiary)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 6)
+                        .allowsHitTesting(false)
+                }
+            }
     }
 }
 
