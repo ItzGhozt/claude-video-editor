@@ -55,6 +55,7 @@ enum PromptBuilder {
         // tools and fails ("tool call could not be parsed"), so replace it outright.
         p.arguments = ["-p", "--output-format", "json", "--tools", "",
                        "--system-prompt", "You are a writing assistant with no tools. You never call tools or take actions; you only reply with the requested text."]
+        p.arguments = (p.arguments ?? []) + ClaudeModel.current.arguments
         p.environment = AuthManager.claudeEnvironment()
         let inPipe = Pipe(), outPipe = Pipe(), errPipe = Pipe()
         p.standardInput = inPipe

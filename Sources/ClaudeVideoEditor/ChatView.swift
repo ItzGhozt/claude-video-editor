@@ -40,6 +40,11 @@ struct ChatView: View {
                         if !session.liveText.isEmpty {
                             Bubble(text: session.liveText, isUser: false)
                         }
+                        if let m = session.activeModel, !session.items.isEmpty {
+                            Text("Answered by \(m)")
+                                .font(.caption2).foregroundStyle(.tertiary)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
                         if session.isBusy {
                             HStack(spacing: 6) {
                                 ProgressView().controlSize(.small)

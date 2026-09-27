@@ -92,6 +92,18 @@ public static class DevTools
             lib.Delete(sv);
             Check("library back to how it was", lib.Prompts.Count == before);
 
+            // 1c. Model choice.
+            var savedModel = Prefs.Current.Model;
+            Prefs.Current.Model = "sonnet";
+            Check("model choice becomes --model", string.Join(" ", ClaudeModel.Current.Arguments) == "--model sonnet");
+            Prefs.Current.Model = "";
+            Check("default model adds no flag", !ClaudeModel.Current.Arguments.Any());
+            Prefs.Current.Model = savedModel;
+            var ms = new ClaudeSession(new ProjectInfo { Name = "model", Path = project });
+            ms.HandleLine("""{"type":"system","subtype":"init","session_id":"m1","model":"claude-sonnet-5"}""");
+            Check("reported model captured", ms.ActiveModel == "claude-sonnet-5");
+            ms.NewChat();
+
             // 2. "Always allow" suggestions.
             AllowRule? S(string cmd) => ClaudeSession.SuggestRule("Bash", new JsonObject { ["command"] = cmd });
             Check("suggest ffmpeg", S("ffmpeg -y -i a.mp4 b.mp4")?.RuleContent == "ffmpeg:*");

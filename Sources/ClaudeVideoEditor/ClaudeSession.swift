@@ -22,9 +22,13 @@ final class ClaudeSession: ObservableObject, Identifiable {
     @Published var isBusy = false
     @Published var draft = ""
     @Published var permissionMode: String?
+    /// The model Claude reports for the running session, e.g. "claude-sonnet-5".
+    @Published var activeModel: String?
     @Published var turnsFinished = 0      // bumped per reply; the clip list watches it
 
     private var sessionID: String?
+    /// The model choice the running process was started with.
+    private var runningModel: ClaudeModel?
     private var process: Process?
     private var stdin: FileHandle?
     private var buffer = Data()
@@ -75,6 +79,15 @@ final class ClaudeSession: ObservableObject, Identifiable {
         items.append(ChatItem(kind: .user, text: text))
         draft = ""
         isBusy = true
+        // Picked a different model since this session started: restart on the new
+        // one. --resume keeps the conversation.
+        if process?.isRunning == true, runningModel != ClaudeModel.current {
+            let old = process
+            process = nil
+            old?.terminate()
+            items.append(ChatItem(kind: .notice, text: "Now using \(ClaudeModel.current.name)"))
+            items.append(items.remove(at: items.count - 2))   // keep the user's message last
+        }
         if process?.isRunning != true {
             do { try start() } catch {
                 items.append(ChatItem(kind: .error, text: "Couldn't start Claude: \(error.localizedDescription)"))
@@ -126,6 +139,7 @@ final class ClaudeSession: ObservableObject, Identifiable {
                     "--output-format", "stream-json",
                     "--verbose", "--include-partial-messages",
                     "--append-system-prompt", Self.appendedPrompt]
+        extra += ClaudeModel.current.arguments
         if let sid = sessionID { extra += ["--resume", sid] }
 
         let p = Process()
@@ -165,6 +179,7 @@ final class ClaudeSession: ObservableObject, Identifiable {
         buffer = Data()
         try p.run()
         process = p
+        runningModel = ClaudeModel.current
         stdin = inPipe.fileHandleForWriting
     }
 
@@ -212,6 +227,7 @@ final class ClaudeSession: ObservableObject, Identifiable {
             if ev["subtype"] as? String == "init" {
                 if let sid = ev["session_id"] as? String { sessionID = sid }
                 permissionMode = ev["permissionMode"] as? String
+                activeModel = ev["model"] as? String
             }
         case "stream_event":
             if let e = ev["event"] as? [String: Any],
@@ -251,6 +267,12 @@ final class ClaudeSession: ObservableObject, Identifiable {
             if let sid = ev["session_id"] as? String { sessionID = sid }
             if ev["is_error"] as? Bool == true {
                 let r = ev["result"] as? String ?? (ev["subtype"] as? String ?? "error")
+                // Errors like "You've hit your session limit" also arrive as an
+                // assistant message first; show them once, as an error.
+                if let last = items.last, last.kind == .assistant,
+                   last.text == r.trimmingCharacters(in: .whitespacesAndNewlines) {
+                    items.removeLast()
+                }
                 items.append(ChatItem(kind: .error, text: r))
             }
             isBusy = false

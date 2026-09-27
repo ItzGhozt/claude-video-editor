@@ -79,6 +79,8 @@ public partial class EditorView : UserControl
         saved.Click += (_, _) => ShowSavedMenu(saved);
         QuickActions.Children.Add(saved);
         _playerTimer.Tick += (_, _) => UpdatePlayerTime();
+        ModelPicker.ItemsSource = ClaudeModel.All;
+        ModelPicker.SelectedItem = ClaudeModel.Current;
         SetupManager.Shared.Changed += UpdateSetupButton;
         Loaded += async (_, _) =>
         {
@@ -188,6 +190,14 @@ public partial class EditorView : UserControl
         ScrollToEnd();
     }
 
+    void ModelPicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ModelPicker.SelectedItem is not ClaudeModel m || m.Alias == Prefs.Current.Model) return;
+        Prefs.Current.Model = m.Alias;
+        Prefs.Current.Save();
+        ModelPicker.ToolTip = m.Label;
+    }
+
     void OpenProjectFolder_Click(object sender, RoutedEventArgs e)
     {
         if (_session?.Project.Path is string dir && Directory.Exists(dir))
@@ -212,6 +222,8 @@ public partial class EditorView : UserControl
         EmptyChat.Visibility = _session.Items.Count == 0 && !_session.HasLiveText ? Visibility.Visible : Visibility.Collapsed;
         LiveBubble.Visibility = _session.HasLiveText ? Visibility.Visible : Visibility.Collapsed;
         LiveText.Text = _session.LiveText;
+        AnsweredBy.Text = _session.ActiveModel.Length > 0 && _session.Items.Count > 0 ? "Answered by " + _session.ActiveModel : "";
+        AnsweredBy.Visibility = AnsweredBy.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         var waitingOnUser = _session.Items.Any(i => i.IsPending);
         WorkingRow.Visibility = _session.IsBusy && !waitingOnUser ? Visibility.Visible : Visibility.Collapsed;
         SendButton.Visibility = _session.IsBusy ? Visibility.Collapsed : Visibility.Visible;
