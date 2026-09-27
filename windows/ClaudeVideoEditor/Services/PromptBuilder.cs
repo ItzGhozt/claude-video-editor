@@ -46,7 +46,7 @@ Their thoughts:
             "-p", "--output-format", "json", "--tools", "",
             "--system-prompt", "You are a writing assistant with no tools. You never call tools or take actions; you only reply with the requested text.",
         };
-        var (code, output, err) = await ProcessRunner.RunAsync(claude, args, Instructions(notes, project, clips),
+        var (code, output, err) = await ProcessRunner.RunAsync(claude, args.Concat(ClaudeModel.Current.Arguments), Instructions(notes, project, clips),
                                                                Path.GetTempPath(), AuthManager.ClaudeEnvironment(), TimeSpan.FromMinutes(3));
         JsonNode? j = null;
         try { j = JsonNode.Parse(output); } catch (System.Text.Json.JsonException) { }

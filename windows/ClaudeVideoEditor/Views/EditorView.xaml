@@ -147,6 +147,9 @@
                     <Border DockPanel.Dock="Top" Padding="16,10" BorderThickness="0,0,0,1" BorderBrush="{StaticResource Subtle}">
                         <DockPanel>
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                                <TextBlock Text="Model" VerticalAlignment="Center" Margin="0,0,6,0" Style="{StaticResource Secondary}" />
+                                <ComboBox x:Name="ModelPicker" Width="120" Margin="0,0,12,0" SelectionChanged="ModelPicker_SelectionChanged"
+                                          ToolTip="Choose which Claude model to use. Applies from your next message." />
                                 <Button Content="New Chat" Margin="0,0,8,0" Click="NewChat_Click" />
                                 <Button Content="Open Folder" Click="OpenProjectFolder_Click" />
                             </StackPanel>
@@ -182,6 +185,7 @@
                             <Border x:Name="LiveBubble" Background="{StaticResource Subtle}" CornerRadius="14" Padding="12,8" Margin="0,0,80,10" HorizontalAlignment="Left">
                                 <TextBlock x:Name="LiveText" TextWrapping="Wrap" />
                             </Border>
+                            <TextBlock x:Name="AnsweredBy" Style="{StaticResource Secondary}" FontSize="10" HorizontalAlignment="Center" Margin="0,0,0,6" />
                             <StackPanel x:Name="WorkingRow" Orientation="Horizontal" Margin="4,0,0,0">
                                 <ProgressBar IsIndeterminate="True" Width="60" Height="4" VerticalAlignment="Center" />
                                 <TextBlock Text="Working…" Style="{StaticResource Secondary}" Margin="8,0,0,0" />

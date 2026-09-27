@@ -30,6 +30,9 @@ grades, subtitles and renders it. You can watch every clip and render right in t
 - **Learns your style**: tell Claude a lasting preference ("I hate fast zooms") or use 👍 / 👎
   on its replies, and it's added to a Likes / Dislikes list that every edit and every Prompt
   Creator prompt follows. You can review and edit the list under **My Style**.
+- **Choose your model**: pick Opus, Sonnet or Haiku (or your plan's default) from the
+  toolbar. Switching mid-chat carries the conversation over, and the chat shows which model
+  answered.
 - **Clip browser and preview**: every video in the project, newest first, with renders
   tagged NEW. Drag a clip into the chat to refer to it.
 - **Contained projects**: each project's Claude session works inside that folder only.

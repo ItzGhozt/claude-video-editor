@@ -113,6 +113,18 @@ enum SelfTest {
         if let s = saved { lib.delete(s) }
         check("library back to how it was", lib.prompts.count == before)
 
+        // 1d. Model choice.
+        let savedModel = UserDefaults.standard.string(forKey: ClaudeModel.storageKey)
+        UserDefaults.standard.set("sonnet", forKey: ClaudeModel.storageKey)
+        check("model choice becomes --model", ClaudeModel.current.arguments == ["--model", "sonnet"])
+        UserDefaults.standard.set("", forKey: ClaudeModel.storageKey)
+        check("default model adds no flag", ClaudeModel.current.arguments.isEmpty)
+        UserDefaults.standard.set(savedModel, forKey: ClaudeModel.storageKey)
+        let ms = ClaudeSession(project: Project(name: "model", path: project))
+        ms.handleLineForTesting(#"{"type":"system","subtype":"init","session_id":"m1","model":"claude-sonnet-5"}"#)
+        check("reported model captured", ms.activeModel == "claude-sonnet-5")
+        ms.newChat()
+
         // 2. Stream parsing.
         let s = ClaudeSession(project: Project(name: "parse", path: project))
         s.newChat()
@@ -126,6 +138,10 @@ enum SelfTest {
         check("items parsed in order", kinds == "assistant,tool,toolResult", kinds)
         check("tool row uses the description", s.items.first { $0.kind == .tool }?.text == "Check ffmpeg")
         check("permission mode captured", s.permissionMode == "acceptEdits")
+        s.newChat()
+        s.handleLineForTesting(#"{"type":"assistant","message":{"content":[{"type":"text","text":"Not logged in · Please run /login"}]}}"#)
+        s.handleLineForTesting(#"{"type":"result","subtype":"success","is_error":true,"result":"Not logged in · Please run /login"}"#)
+        check("error shown once, not twice", s.items.map(\.kind.rawValue) == ["error"], s.items.map(\.kind.rawValue).joined(separator: ","))
         s.newChat()
 
         // 3. Real Claude Code on this machine (installed by CI), not signed in.

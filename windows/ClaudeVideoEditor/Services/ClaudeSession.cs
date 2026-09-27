@@ -63,6 +63,10 @@ public class ClaudeSession : INotifyPropertyChanged
 
     string? _sessionId;
     Process? _proc;
+    ClaudeModel? _runningModel;
+    string _activeModel = "";
+    /// The model Claude reports for the running session, e.g. "claude-sonnet-5".
+    public string ActiveModel { get => _activeModel; private set { _activeModel = value; Notify(); } }
     string _stderrTail = "";
 
     public ClaudeSession(ProjectInfo project)
@@ -107,6 +111,14 @@ public class ClaudeSession : INotifyPropertyChanged
         Items.Add(new ChatItem { Kind = ChatKind.User, Text = text });
         Draft = "";
         IsBusy = true;
+        // Picked a different model since this session started: restart on the new
+        // one. --resume keeps the conversation.
+        if (_proc is { HasExited: false } running && _runningModel != ClaudeModel.Current)
+        {
+            _proc = null;
+            try { running.Kill(true); } catch { }
+            Items.Insert(Items.Count - 1, new ChatItem { Kind = ChatKind.Notice, Text = "Now using " + ClaudeModel.Current.Name });
+        }
         if (_proc is not { HasExited: false })
         {
             try { Start(); }
@@ -224,6 +236,7 @@ public class ClaudeSession : INotifyPropertyChanged
             "--verbose", "--include-partial-messages",
             "--append-system-prompt", AppendedPrompt(),
         };
+        args.AddRange(ClaudeModel.Current.Arguments);
         if (_sessionId != null) { args.Add("--resume"); args.Add(_sessionId); }
 
         var p = new Process
@@ -248,6 +261,7 @@ public class ClaudeSession : INotifyPropertyChanged
         p.BeginOutputReadLine();
         p.BeginErrorReadLine();
         _proc = p;
+        _runningModel = ClaudeModel.Current;
     }
 
     void Write(JsonNode msg)
@@ -283,7 +297,11 @@ public class ClaudeSession : INotifyPropertyChanged
         switch (ev["type"]?.GetValue<string>())
         {
             case "system":
-                if (ev["subtype"]?.GetValue<string>() == "init" && ev["session_id"]?.GetValue<string>() is string sid) _sessionId = sid;
+                if (ev["subtype"]?.GetValue<string>() == "init")
+                {
+                    if (ev["session_id"]?.GetValue<string>() is string sid) _sessionId = sid;
+                    if (ev["model"]?.GetValue<string>() is string model) ActiveModel = model;
+                }
                 break;
             case "stream_event":
                 var e = ev["event"];

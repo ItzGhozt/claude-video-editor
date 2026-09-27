@@ -22,6 +22,8 @@ public class Prefs
 {
     public bool OnboardingDone { get; set; }
     public string AuthMode { get; set; } = "account";   // "account" | "apiKey"
+    /// Claude model alias for sessions and the Prompt Creator; "" = the plan's default.
+    public string Model { get; set; } = "";
     public List<ProjectInfo> Projects { get; set; } = new();
     public string? SelectedPath { get; set; }
 
