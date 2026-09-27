@@ -1,0 +1,77 @@
+<UserControl x:Class="ClaudeVideoEditor.Views.SignInPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="500" Margin="30" HorizontalAlignment="Center">
+            <TextBlock Text="&#xE77B;" FontFamily="{StaticResource Icons}" FontSize="48" Foreground="{StaticResource Accent}" HorizontalAlignment="Center" Margin="0,10,0,12" />
+            <TextBlock Text="Sign in to Claude" FontSize="28" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,0,0,18" />
+
+            <!-- Checking -->
+            <StackPanel x:Name="CheckingPanel">
+                <ProgressBar IsIndeterminate="True" Width="200" />
+                <TextBlock Text="Checking…" Style="{StaticResource Secondary}" HorizontalAlignment="Center" Margin="0,8,0,0" />
+            </StackPanel>
+
+            <!-- Claude Code missing -->
+            <StackPanel x:Name="NoClaudePanel">
+                <TextBlock Style="{StaticResource Secondary}" TextAlignment="Center" Margin="0,0,0,12"
+                           Text="Claude Code needs to be installed first. It's what signs you in and does the editing." />
+                <Button x:Name="InstallClaudeButton" Content="Install Claude Code" Style="{StaticResource Primary}" HorizontalAlignment="Stretch" Click="InstallClaude_Click" />
+                <ProgressBar x:Name="InstallProgress" IsIndeterminate="True" Margin="0,10,0,0" Visibility="Collapsed" />
+                <TextBlock x:Name="InstallMessage" Foreground="{StaticResource Bad}" TextWrapping="Wrap" Margin="0,8,0,0" />
+            </StackPanel>
+
+            <!-- Signed out -->
+            <StackPanel x:Name="SignedOutPanel">
+                <TextBlock Style="{StaticResource Secondary}" TextAlignment="Center" Margin="0,0,0,14"
+                           Text="Use your Claude account (Pro, Max, Team or Enterprise). It's the same sign-in as Claude Code, and usage counts against your plan." />
+                <Button Content="Sign in with Claude" Style="{StaticResource Primary}" HorizontalAlignment="Stretch" Padding="14,9" Click="SignIn_Click" />
+                <Expander Header="Use an Anthropic API key instead" Margin="0,16,0,0">
+                    <StackPanel Margin="0,8,0,0">
+                        <TextBlock Style="{StaticResource Secondary}" Margin="0,0,0,8"
+                                   Text="Pay per use through the Anthropic Console. The key is stored in Windows Credential Manager." />
+                        <DockPanel>
+                            <Button x:Name="UseKeyButton" Content="Use Key" DockPanel.Dock="Right" Margin="8,0,0,0" Click="UseKey_Click" />
+                            <PasswordBox x:Name="ApiKeyBox" />
+                        </DockPanel>
+                        <TextBlock Margin="0,8,0,0">
+                            <Hyperlink NavigateUri="https://console.anthropic.com/settings/keys" RequestNavigate="Link_Navigate">Get an API key</Hyperlink>
+                        </TextBlock>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+
+            <!-- Signing in -->
+            <StackPanel x:Name="SigningInPanel">
+                <ProgressBar IsIndeterminate="True" Width="200" />
+                <TextBlock Text="Finish signing in in your browser." Style="{StaticResource SectionTitle}" HorizontalAlignment="Center" Margin="0,12,0,4" />
+                <TextBlock x:Name="LoginLinkBlock" HorizontalAlignment="Center" Margin="0,0,0,12">
+                    <Hyperlink x:Name="LoginLink" RequestNavigate="Link_Navigate">Browser didn't open? Click here.</Hyperlink>
+                </TextBlock>
+                <TextBlock Style="{StaticResource Secondary}" Text="If the page shows a code, paste it here:" Margin="0,0,0,6" />
+                <DockPanel>
+                    <Button Content="Submit" DockPanel.Dock="Right" Margin="8,0,0,0" Click="SubmitCode_Click" />
+                    <TextBox x:Name="CodeBox" />
+                </DockPanel>
+                <Button Content="Cancel" HorizontalAlignment="Center" Margin="0,14,0,0" Click="Cancel_Click" />
+            </StackPanel>
+
+            <!-- Signed in -->
+            <StackPanel x:Name="SignedInPanel">
+                <Border Style="{StaticResource Card}">
+                    <DockPanel>
+                        <TextBlock x:Name="AccountIcon" Text="&#xE930;" FontFamily="{StaticResource Icons}" FontSize="28" Foreground="{StaticResource Good}" VerticalAlignment="Center" Margin="0,0,14,0" />
+                        <StackPanel>
+                            <TextBlock x:Name="AccountTitle" Style="{StaticResource SectionTitle}" />
+                            <TextBlock x:Name="AccountDetail" Style="{StaticResource Secondary}" />
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+                <TextBlock Text="You're signed in." Style="{StaticResource Secondary}" HorizontalAlignment="Center" />
+                <Button Content="Sign Out…" HorizontalAlignment="Center" Margin="0,10,0,0" Click="SignOut_Click" />
+            </StackPanel>
+
+            <TextBlock x:Name="ErrorText" Foreground="{StaticResource Bad}" TextWrapping="Wrap" Margin="0,14,0,0" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
