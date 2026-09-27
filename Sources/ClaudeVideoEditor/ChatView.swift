@@ -63,48 +63,43 @@ struct ChatView: View {
 
             Divider()
 
-            FlowLayout(spacing: 6) {
-                    ForEach(QuickAction.all) { a in
-                        Button {
-                            session.draft = session.draft.isEmpty ? a.prompt : session.draft + "\n\n" + a.prompt
-                            composerFocused = true
-                        } label: {
-                            Label(a.title, systemImage: a.icon)
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .help(a.prompt)
-                    }
-                    SavedPromptsMenu(session: session, focus: { composerFocused = true })
-                    ModelPicker(compact: true)
-            }
-            .padding(.horizontal, 12).padding(.top, 8)
-
-            HStack(alignment: .bottom, spacing: 8) {
-                ComposerEditor(text: $session.draft,
-                               placeholder: "Tell Claude what to edit…  (Return sends, ⇧Return for a new line)") {
+            // One box: the message on top; quick actions, saved prompts, the model
+            // and Send along the bottom edge.
+            VStack(spacing: 2) {
+                ComposerEditor(text: $session.draft, placeholder: "Tell Claude what to edit…") {
                     session.send(session.draft)
                 }
                 .focused($composerFocused)
                 .padding(.horizontal, 6)
-                .padding(.vertical, 4)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .textBackgroundColor)))
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.secondary.opacity(0.3)))
-                if session.isBusy {
-                    Button(role: .destructive) { session.stop() } label: {
-                        Image(systemName: "stop.circle.fill").font(.title)
+                .padding(.top, 4)
+
+                HStack(spacing: 2) {
+                    QuickActionsMenu(session: session, focus: { composerFocused = true })
+                    SavedPromptsMenu(session: session, focus: { composerFocused = true })
+                    Spacer()
+                    ModelPicker(compact: true)
+                    if session.isBusy {
+                        Button(role: .destructive) { session.stop() } label: {
+                            Image(systemName: "stop.circle.fill").font(.title2)
+                        }
+                        .buttonStyle(.borderless).help("Stop")
+                    } else {
+                        Button { session.send(session.draft) } label: {
+                            Image(systemName: "arrow.up.circle.fill").font(.title2)
+                        }
+                        .buttonStyle(.borderless)
+                        .disabled(session.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .keyboardShortcut(.return, modifiers: .command)
+                        .help("Send (Return). Shift-Return adds a new line.")
                     }
-                    .buttonStyle(.borderless).help("Stop")
-                } else {
-                    Button { session.send(session.draft) } label: {
-                        Image(systemName: "arrow.up.circle.fill").font(.title)
-                    }
-                    .buttonStyle(.borderless)
-                    .disabled(session.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .keyboardShortcut(.return, modifiers: .command)
-                    .help("Send (⌘Return)")
                 }
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 6)
+                .padding(.bottom, 6)
             }
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .textBackgroundColor)))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.25)))
             .padding(12)
         }
         .onAppear { composerFocused = true }
@@ -223,6 +218,31 @@ private struct AssistantMessage: View {
     }
 }
 
+/// Ready-made requests, tucked into one menu so the message box stays clean.
+private struct QuickActionsMenu: View {
+    @ObservedObject var session: ClaudeSession
+    let focus: () -> Void
+
+    var body: some View {
+        Menu {
+            ForEach(QuickAction.all) { a in
+                Button {
+                    session.draft = session.draft.isEmpty ? a.prompt : session.draft + "\n\n" + a.prompt
+                    focus()
+                } label: {
+                    Label(a.title, systemImage: a.icon)
+                }
+                .help(a.prompt)
+            }
+        } label: {
+            Label("Quick actions", systemImage: "sparkles")
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .help("Start from a ready-made request")
+    }
+}
+
 /// "Saved" menu next to the quick actions: insert a saved prompt, or save the
 /// current message.
 private struct SavedPromptsMenu: View {
@@ -257,10 +277,9 @@ private struct SavedPromptsMenu: View {
         } label: {
             Label("Saved", systemImage: "star")
         }
-        .menuStyle(.button)
-        .buttonStyle(.bordered)
-        .controlSize(.small)
+        .menuStyle(.borderlessButton)
         .fixedSize()
+        .help("Insert a saved prompt, or save this one")
         .sheet(isPresented: $saving) { SavePromptSheet(text: session.draft) }
     }
 }
@@ -328,45 +347,3 @@ struct Bubble: View {
     }
 }
 
-/// Lays children out left to right, wrapping onto new rows, so every quick
-/// action stays visible however narrow the chat column is.
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 6
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let rows = arrange(width: proposal.width ?? .infinity, subviews: subviews)
-        let h = rows.last.map { $0.y + $0.height } ?? 0
-        let w = rows.map(\.width).max() ?? 0
-        return CGSize(width: proposal.width ?? w, height: h)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        for row in arrange(width: bounds.width, subviews: subviews) {
-            var x = bounds.minX
-            for i in row.indices {
-                let size = subviews[i].sizeThatFits(.unspecified)
-                subviews[i].place(at: CGPoint(x: x, y: bounds.minY + row.y), proposal: ProposedViewSize(size))
-                x += size.width + spacing
-            }
-        }
-    }
-
-    private struct Row { var indices: [Int] = []; var y: CGFloat = 0; var width: CGFloat = 0; var height: CGFloat = 0 }
-
-    private func arrange(width: CGFloat, subviews: Subviews) -> [Row] {
-        var rows: [Row] = [Row()]
-        for i in subviews.indices {
-            let size = subviews[i].sizeThatFits(.unspecified)
-            if !rows[rows.count - 1].indices.isEmpty && rows[rows.count - 1].width + spacing + size.width > width {
-                let last = rows[rows.count - 1]
-                rows.append(Row(y: last.y + last.height + spacing))
-            }
-            var r = rows[rows.count - 1]
-            r.width += (r.indices.isEmpty ? 0 : spacing) + size.width
-            r.height = max(r.height, size.height)
-            r.indices.append(i)
-            rows[rows.count - 1] = r
-        }
-        return rows
-    }
-}

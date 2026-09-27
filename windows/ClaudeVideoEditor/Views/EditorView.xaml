@@ -4,6 +4,12 @@
              xmlns:v="clr-namespace:ClaudeVideoEditor.Views">
     <UserControl.Resources>
         <!-- Chat item templates, picked by ChatTemplateSelector -->
+        <Style x:Key="Flat" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="Opacity" Value="0.8" />
+        </Style>
         <Style x:Key="Tiny" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Padding" Value="6,1" />
             <Setter Property="FontSize" Value="11" />
@@ -147,9 +153,6 @@
                     <Border DockPanel.Dock="Top" Padding="16,10" BorderThickness="0,0,0,1" BorderBrush="{StaticResource Subtle}">
                         <DockPanel>
                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
-                                <TextBlock Text="Model" VerticalAlignment="Center" Margin="0,0,6,0" Style="{StaticResource Secondary}" />
-                                <ComboBox x:Name="ModelPicker" Width="120" Margin="0,0,12,0" SelectionChanged="ModelPicker_SelectionChanged"
-                                          ToolTip="Choose which Claude model to use. Applies from your next message." />
                                 <Button Content="New Chat" Margin="0,0,8,0" Click="NewChat_Click" />
                                 <Button Content="Open Folder" Click="OpenProjectFolder_Click" />
                             </StackPanel>
@@ -160,18 +163,34 @@
                         </DockPanel>
                     </Border>
 
-                    <!-- Composer -->
-                    <StackPanel DockPanel.Dock="Bottom" Margin="12,6,12,12">
-                        <WrapPanel x:Name="QuickActions" Margin="0,0,0,4" />
-                        <DockPanel>
-                            <Button x:Name="SendButton" DockPanel.Dock="Right" Style="{StaticResource Primary}" Margin="8,0,0,0" VerticalAlignment="Bottom" Click="Send_Click"
-                                    ToolTip="Send (Enter)" Content="Send" />
-                            <Button x:Name="StopButton" DockPanel.Dock="Right" Margin="8,0,0,0" VerticalAlignment="Bottom" Click="Stop_Click" ToolTip="Stop" Visibility="Collapsed" Content="Stop" />
-                            <TextBox x:Name="Composer" AcceptsReturn="True" TextWrapping="Wrap" MaxHeight="180" MinHeight="40" VerticalScrollBarVisibility="Auto"
-                                     PreviewKeyDown="Composer_PreviewKeyDown" TextChanged="Composer_TextChanged" />
-                        </DockPanel>
-                        <TextBlock Text="Enter sends · Shift+Enter for a new line" Style="{StaticResource Secondary}" FontSize="11" Margin="2,4,0,0" />
-                    </StackPanel>
+                    <!-- Composer: one box with the message on top; quick actions, saved
+                         prompts, the model and Send along the bottom edge. -->
+                    <Border DockPanel.Dock="Bottom" Margin="12,6,12,12" Padding="6,4,6,6" CornerRadius="10"
+                            BorderThickness="1" BorderBrush="{StaticResource SubtleBorder}">
+                        <StackPanel>
+                            <Grid>
+                                <TextBox x:Name="Composer" AcceptsReturn="True" TextWrapping="Wrap" MaxHeight="180" MinHeight="36" VerticalScrollBarVisibility="Auto"
+                                         BorderThickness="0" Background="Transparent"
+                                         PreviewKeyDown="Composer_PreviewKeyDown" TextChanged="Composer_TextChanged"
+                                         ToolTip="Enter sends · Shift+Enter for a new line" />
+                                <TextBlock x:Name="ComposerPlaceholder" Text="Tell Claude what to edit…" Style="{StaticResource Secondary}"
+                                           Margin="12,8,0,0" IsHitTestVisible="False" />
+                            </Grid>
+                            <DockPanel Margin="0,4,0,0" LastChildFill="False">
+                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                                    <Button x:Name="QuickActionsButton" Content="✨ Quick actions ▾" Style="{StaticResource Flat}" Click="QuickActions_Click"
+                                            ToolTip="Start from a ready-made request" />
+                                    <Button x:Name="SavedButton" Content="☆ Saved ▾" Style="{StaticResource Flat}" Click="Saved_Click"
+                                            ToolTip="Insert a saved prompt, or save this one" />
+                                </StackPanel>
+                                <Button x:Name="SendButton" DockPanel.Dock="Right" Style="{StaticResource Primary}" Margin="6,0,0,0" Click="Send_Click"
+                                        ToolTip="Send (Enter)" Content="Send" />
+                                <Button x:Name="StopButton" DockPanel.Dock="Right" Margin="6,0,0,0" Click="Stop_Click" ToolTip="Stop" Visibility="Collapsed" Content="Stop" />
+                                <ComboBox x:Name="ModelPicker" DockPanel.Dock="Right" MinWidth="92" SelectionChanged="ModelPicker_SelectionChanged"
+                                          ToolTip="Choose which Claude model to use. Applies from your next message." />
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
 
                     <ScrollViewer x:Name="ChatScroll" VerticalScrollBarVisibility="Auto" Padding="16,12">
                         <StackPanel>
