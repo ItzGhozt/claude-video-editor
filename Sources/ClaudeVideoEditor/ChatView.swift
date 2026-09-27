@@ -76,6 +76,7 @@ struct ChatView: View {
                         .help(a.prompt)
                     }
                     SavedPromptsMenu(session: session, focus: { composerFocused = true })
+                    ModelPicker(compact: true)
             }
             .padding(.horizontal, 12).padding(.top, 8)
 

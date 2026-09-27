@@ -36,24 +36,35 @@ enum ClaudeModel: String, CaseIterable, Identifiable {
     var arguments: [String] { self == .automatic ? [] : ["--model", rawValue] }
 }
 
-/// Toolbar menu for picking the model. Takes effect from the next message.
+/// Menu for picking the model: shows "Model: Sonnet" so it's easy to spot.
+/// Takes effect from the next message.
 struct ModelPicker: View {
     @AppStorage(ClaudeModel.storageKey) private var raw = ""
+    var compact = false
+
+    private var current: ClaudeModel { ClaudeModel(rawValue: raw) ?? .automatic }
 
     var body: some View {
-        Picker(selection: $raw) {
+        Menu {
             ForEach(ClaudeModel.allCases) { m in
-                VStack(alignment: .leading) {
-                    Text(m.name)
-                    Text(m.blurb).font(.caption)
+                Button {
+                    raw = m.rawValue
+                } label: {
+                    if m == current {
+                        Label("\(m.name): \(m.blurb)", systemImage: "checkmark")
+                    } else {
+                        Text("\(m.name): \(m.blurb)")
+                    }
                 }
-                .tag(m.rawValue)
             }
         } label: {
-            Label("Model: \(ClaudeModel(rawValue: raw)?.name ?? "Default")", systemImage: "cpu")
+            Label("Model: \(current.name)", systemImage: "cpu")
+                .labelStyle(.titleAndIcon)
         }
-        .pickerStyle(.menu)
+        .menuStyle(.button)
+        .buttonStyle(.bordered)
+        .controlSize(compact ? .small : .regular)
         .fixedSize()
-        .help("Choose which Claude model to use. Applies from your next message.")
+        .help("Choose which Claude model to use (Opus, Sonnet, Haiku). Applies from your next message.")
     }
 }
