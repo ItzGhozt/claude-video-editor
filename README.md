@@ -183,6 +183,9 @@ universal build, runs the self-test (`CE_SELF_TEST=report.txt`), including a liv
 Claude Code session, and takes screenshots. On Windows it builds x64 and arm64, then runs
 `--self-test` and `--snapshot`. Reports and screenshots are attached to each run as artifacts.
 
+`main` is protected: changes go in through a pull request, and it can only be merged once
+all three CI checks (macOS, Windows x64, Windows arm64) pass on an up-to-date branch.
+
 To publish a release, update `scripts/release-notes.md`, then push a tag:
 `git tag v1.2.0 && git push origin v1.2.0`. The [release workflow](.github/workflows/release.yml)
 reruns CI and, only if it passes, creates the GitHub release with the macOS and Windows zips.
