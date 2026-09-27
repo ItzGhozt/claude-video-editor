@@ -12,6 +12,7 @@ struct ClaudeVideoEditorApp: App {
         // Dock icon or keyboard focus; the .app bundle doesn't need this.
         NSApplication.shared.setActivationPolicy(.regular)
         DevSnapshot.scheduleIfRequested()
+        SelfTest.runIfRequested()
     }
 
     var body: some Scene {

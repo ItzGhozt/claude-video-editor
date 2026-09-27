@@ -173,6 +173,9 @@ final class ClaudeSession: ObservableObject, Identifiable {
 
     // MARK: - Parsing stream-json
 
+    /// Test hook: feed one stream-json line as if Claude had printed it.
+    func handleLineForTesting(_ line: String) { consume(Data((line + "\n").utf8)) }
+
     private func consume(_ data: Data) {
         buffer.append(data)
         while let nl = buffer.firstIndex(of: 0x0A) {
