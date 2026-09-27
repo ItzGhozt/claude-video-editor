@@ -7,7 +7,7 @@
         <Style x:Key="Flat" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="Padding" Value="6,3" />
             <Setter Property="Opacity" Value="0.8" />
         </Style>
         <Style x:Key="Tiny" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
@@ -176,7 +176,7 @@
                                 <TextBlock x:Name="ComposerPlaceholder" Text="Tell Claude what to edit…" Style="{StaticResource Secondary}"
                                            Margin="12,8,0,0" IsHitTestVisible="False" />
                             </Grid>
-                            <DockPanel Margin="0,4,0,0">
+                            <DockPanel Margin="0,4,0,0" LastChildFill="False">
                                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                                     <Button x:Name="QuickActionsButton" Content="✨ Quick actions ▾" Style="{StaticResource Flat}" Click="QuickActions_Click"
                                             ToolTip="Start from a ready-made request" />
@@ -186,7 +186,7 @@
                                 <Button x:Name="SendButton" DockPanel.Dock="Right" Style="{StaticResource Primary}" Margin="6,0,0,0" Click="Send_Click"
                                         ToolTip="Send (Enter)" Content="Send" />
                                 <Button x:Name="StopButton" DockPanel.Dock="Right" Margin="6,0,0,0" Click="Stop_Click" ToolTip="Stop" Visibility="Collapsed" Content="Stop" />
-                                <ComboBox x:Name="ModelPicker" DockPanel.Dock="Right" HorizontalAlignment="Right" Width="110" SelectionChanged="ModelPicker_SelectionChanged"
+                                <ComboBox x:Name="ModelPicker" DockPanel.Dock="Right" MinWidth="92" SelectionChanged="ModelPicker_SelectionChanged"
                                           ToolTip="Choose which Claude model to use. Applies from your next message." />
                             </DockPanel>
                         </StackPanel>
