@@ -328,7 +328,12 @@ public class ClaudeSession : INotifyPropertyChanged
                 ExpireApprovals();
                 if (ev["session_id"]?.GetValue<string>() is string rsid) _sessionId = rsid;
                 if (ev["is_error"]?.GetValue<bool>() == true)
-                    Items.Add(new ChatItem { Kind = ChatKind.Error, Text = ev["result"]?.GetValue<string>() ?? "error" });
+                {
+                    var err = ev["result"]?.GetValue<string>() ?? "error";
+                    // Errors like "Not logged in" also arrive as an assistant message first.
+                    if (Items.LastOrDefault() is { Kind: ChatKind.Assistant } last && last.Text == err.Trim()) Items.Remove(last);
+                    Items.Add(new ChatItem { Kind = ChatKind.Error, Text = err });
+                }
                 IsBusy = false;
                 TurnsFinished++;
                 Save();

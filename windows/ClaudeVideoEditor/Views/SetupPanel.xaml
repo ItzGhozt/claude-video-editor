@@ -50,7 +50,18 @@
                                             <TextBlock Text="{Binding OptionalLabel}" Style="{StaticResource Secondary}" FontSize="11" VerticalAlignment="Bottom" Margin="8,0,0,2" />
                                         </StackPanel>
                                         <TextBlock Text="{Binding Blurb}" Style="{StaticResource Secondary}" Margin="0,2,0,0" />
-                                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Margin="0,4,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <!-- An empty TextBlock still takes a line of height. -->
+                                                        <Trigger Property="Text" Value="">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                         <ProgressBar IsIndeterminate="True" Margin="0,8,0,0" Visibility="{Binding IsWorking, Converter={StaticResource BoolToVis}}" />
                                     </StackPanel>
                                 </DockPanel>

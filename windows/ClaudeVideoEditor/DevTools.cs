@@ -75,6 +75,10 @@ public static class DevTools
             Check("approval suggests ffmpeg rule", approval?.SuggestedRule?.RuleContent == "ffmpeg:*");
             Check("approval expires when the turn ends", approval?.Approval == ApprovalState.Expired);
             s.NewChat();
+            s.HandleLine("""{"type":"assistant","message":{"content":[{"type":"text","text":"Not logged in · Please run /login"}]}}""");
+            s.HandleLine("""{"type":"result","subtype":"success","is_error":true,"result":"Not logged in · Please run /login"}""");
+            Check("error shown once, not twice", string.Join(",", s.Items.Select(i => i.Kind)) == "Error", string.Join(",", s.Items.Select(i => i.Kind)));
+            s.NewChat();
 
             // 4. Real Claude Code on this machine (installed by CI), not signed in.
             if (Toolchain.Claude is string claude)
