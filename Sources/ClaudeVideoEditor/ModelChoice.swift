@@ -36,11 +36,11 @@ enum ClaudeModel: String, CaseIterable, Identifiable {
     var arguments: [String] { self == .automatic ? [] : ["--model", rawValue] }
 }
 
-/// Menu for picking the model: shows "Model: Sonnet" so it's easy to spot.
+/// Menu for picking the model, at the bottom right of the message box.
 /// Takes effect from the next message.
 struct ModelPicker: View {
     @AppStorage(ClaudeModel.storageKey) private var raw = ""
-    var compact = false
+    var compact = true
 
     private var current: ClaudeModel { ClaudeModel(rawValue: raw) ?? .automatic }
 
@@ -58,12 +58,10 @@ struct ModelPicker: View {
                 }
             }
         } label: {
-            Label("Model: \(current.name)", systemImage: "cpu")
+            Label(current.name, systemImage: "cpu")
                 .labelStyle(.titleAndIcon)
         }
-        .menuStyle(.button)
-        .buttonStyle(.bordered)
-        .controlSize(compact ? .small : .regular)
+        .menuStyle(.borderlessButton)
         .fixedSize()
         .help("Choose which Claude model to use (Opus, Sonnet, Haiku). Applies from your next message.")
     }

@@ -64,20 +64,6 @@ public partial class EditorView : UserControl
     public EditorView()
     {
         InitializeComponent();
-        foreach (var a in QuickAction.All)
-        {
-            var b = new Button { Content = a.Title, Style = (Style)FindResource("Chip"), ToolTip = a.Prompt };
-            b.Click += (_, _) =>
-            {
-                Composer.Text = Composer.Text.Length == 0 ? a.Prompt : Composer.Text + "\n\n" + a.Prompt;
-                Composer.Focus();
-                Composer.CaretIndex = Composer.Text.Length;
-            };
-            QuickActions.Children.Add(b);
-        }
-        var saved = new Button { Content = "☆ Saved ▾", Style = (Style)FindResource("Chip"), ToolTip = "Insert a saved prompt, or save this message" };
-        saved.Click += (_, _) => ShowSavedMenu(saved);
-        QuickActions.Children.Add(saved);
         _playerTimer.Tick += (_, _) => UpdatePlayerTime();
         ModelPicker.ItemsSource = ClaudeModel.All;
         ModelPicker.SelectedItem = ClaudeModel.Current;
@@ -235,7 +221,11 @@ public partial class EditorView : UserControl
 
     void Send_Click(object sender, RoutedEventArgs e) => SendDraft();
     void Stop_Click(object sender, RoutedEventArgs e) => _session?.Stop();
-    void Composer_TextChanged(object sender, TextChangedEventArgs e) { if (_session != null) SendButton.IsEnabled = Composer.Text.Trim().Length > 0; }
+    void Composer_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        ComposerPlaceholder.Visibility = Composer.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+        if (_session != null) SendButton.IsEnabled = Composer.Text.Trim().Length > 0;
+    }
 
     void Composer_PreviewKeyDown(object sender, KeyEventArgs e)
     {
@@ -286,6 +276,20 @@ public partial class EditorView : UserControl
         Composer.CaretIndex = Composer.Text.Length;
         return true;
     }
+
+    void QuickActions_Click(object sender, RoutedEventArgs e)
+    {
+        var menu = new ContextMenu { PlacementTarget = QuickActionsButton };
+        foreach (var a in QuickAction.All)
+        {
+            var mi = new MenuItem { Header = a.Title, ToolTip = a.Prompt };
+            mi.Click += (_, _) => InsertIntoComposer(a.Prompt);
+            menu.Items.Add(mi);
+        }
+        menu.IsOpen = true;
+    }
+
+    void Saved_Click(object sender, RoutedEventArgs e) => ShowSavedMenu(SavedButton);
 
     void ShowSavedMenu(Button anchor)
     {

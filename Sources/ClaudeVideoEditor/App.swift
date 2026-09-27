@@ -217,7 +217,6 @@ struct MainView: View {
         .toolbar {
             if let p = store.selected {
                 let s = store.session(for: p)
-                ToolbarItem(placement: .primaryAction) { ModelPicker() }
                 ToolbarItem(placement: .primaryAction) {
                     Button { confirmNewChat = true } label: { Label("New Chat", systemImage: "square.and.pencil") }
                         .help("Start a fresh conversation for this project")
