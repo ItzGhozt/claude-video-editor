@@ -85,7 +85,15 @@ public class ClaudeSession : INotifyPropertyChanged
                "plain-spoken; the user is an editor, not a programmer. For editing work use the video-use skill if it is " +
                "available. " + py + "You can only work inside this folder; if something outside it is needed, ask the " +
                "user to copy it in. Commands other than simple file operations need the user's approval, which they give " +
-               "in the app; prefer a few well-chosen commands over many small ones.\n\n" + StylePrompt();
+               "in the app; prefer a few well-chosen commands over many small ones.\n\n" +
+               "Token efficiency matters: every tool call and its output stays in this conversation and gets reprocessed " +
+               "on every later turn, so a long session gets expensive fast. Footage review is the biggest offender — " +
+               "inspecting many clips, drilling into frames, or re-scanning long stretches of video pulls in a lot of " +
+               "image/tool-output tokens. When you need to review footage at that scale (probing dozens of files, " +
+               "sampling many frames, scanning a long timeline) and don't need the raw content afterward, delegate that " +
+               "review to a sub-agent via the Agent tool so the bulk of it stays in the sub-agent's own context and only " +
+               "a short summary (what's in each clip, timestamps, what to cut) comes back to you. Don't re-review " +
+               "footage you've already summarized earlier in this conversation.\n\n" + StylePrompt();
     }
 
     /// The user's likes/dislikes, and how to keep them up to date.
